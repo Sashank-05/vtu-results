@@ -38,7 +38,7 @@ def fill_form(usn):
 
     try:
         cap.send_keys(text)
-        # driver.find_element('id', "submit").click()
+        driver.find_element('id', "submit").click()
 
     except:
         # Catches all types of errors like Invalid Captcha and Invalid USN
@@ -70,8 +70,8 @@ def fill_form(usn):
         except:
             pass
 
-
-for i in range(1, 54):
+l=[55]
+for i in (l):
     usn = f"1BI23CD{i:03d}"
 
     fill_form(usn)
