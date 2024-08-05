@@ -45,18 +45,19 @@ def fill_form(usn):
 
     try:
         cap.send_keys(text)
+
         try:
             driver.find_element('id', "submit").click()
         except selenium.common.exceptions.NoSuchElementException:
             pass
 
+        driver.implicitly_wait(25)
+        with open("pages/" + str(usn) + ".html", "w", encoding="utf8") as file:
+            file.write(driver.page_source)
+
 
     except:
-        try:
-            with open("pages/" + str(usn) + ".html", "w", encoding="utf8") as file:
-                file.write(driver.page_source)
-        except:
-            handle_alert()
+        handle_alert()
 
 
 l = [54, 55]
