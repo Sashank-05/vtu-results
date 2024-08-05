@@ -1,24 +1,20 @@
-import os
-import time
 import cv2 as cv
 import numpy as np
-import pytesseract
-from PIL import Image
 
-# cv.imshow("Original", image)
+img1 = cv.imread('background.png')
+img2 = cv.imread('images/2.jpg')
 
-pytesseract.pytesseract.tesseract_cmd = r'C:\Program Files\Tesseract-OCR\tesseract'
+img1 = cv.resize(img1, (img2.shape[1], img2.shape[0]))
 
-for i in os.listdir("data"):
-    print(i)
-    image = cv.imread("data/" + i)
-    mask = cv.inRange(image, np.array([102, 102, 102]), np.array([103, 103, 103]))
+diff = cv.absdiff(img1, img2)
 
-    res = cv.bitwise_and(image, image, mask=mask)
-    inverted = cv.bitwise_not(mask)
+lower_bound = np.array([50, 50, 50])
+upper_bound = np.array([255, 255, 255])
+mask = cv.inRange(diff, lower_bound, upper_bound)
 
-    cv.imwrite(f"processing/{i}inverted.bmp", inverted)
-    cv.imwrite(f"processing/{i}masked.bmp", mask)
-    tex = pytesseract.image_to_string(mask)
+result = cv.bitwise_and(img2, img2, mask=mask)
 
-    print(tex)
+cv.imwrite('result_image.png', result)
+cv.imshow('Result Image', result)
+cv.waitKey(0)
+cv.destroyAllWindows()

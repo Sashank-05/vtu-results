@@ -1,6 +1,7 @@
 import cv2 as cv
 import numpy as np
 import pytesseract
+from collections import Counter
 
 
 class Captcha:
@@ -13,9 +14,11 @@ class Captcha:
         # inverted = cv.bitwise_not(mask)
         # cv.imwrite(f"inverted.bmp", inverted)
         # cv.imwrite(f"masked.bmp", mask)
-        text = pytesseract.image_to_string(mask)
-
-        return text
+        text = [pytesseract.image_to_string(mask) for x in range(3)]
+        x = max(Counter(text))[:-1]
+        return x
 
     def solve_invert(self):
         raise NotImplementedError
+
+

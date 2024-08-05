@@ -60,7 +60,8 @@ def fill_form(usn):
                 alert.accept()
                 fill_form(usn)
         except:
-            pass
+            driver.quit()
+            fill_form(usn)
 
 
 l = [54, 55]
@@ -68,4 +69,4 @@ for i in l:
     usn = f"1BI23CD{i:03d}"
 
     fill_form(usn)
-time.sleep(50)
+
