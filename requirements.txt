@@ -3,4 +3,8 @@ numpy~=2.0.1
 pytesseract~=0.3.10
 pillow~=10.4.0
 selenium==4.22.0
-
+flask
+pandas
+lxml
+html5lib
+beautifulsoup4

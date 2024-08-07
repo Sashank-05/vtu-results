@@ -12,7 +12,7 @@ import os
 pytesseract.pytesseract.tesseract_cmd = r'C:\Program Files\Tesseract-OCR\tesseract'
 
 chrome_options = webdriver.ChromeOptions()
-chrome_options.add_argument("--headless")
+# chrome_options.add_argument("--headless")
 chrome_options.add_argument("--no-sandbox")
 chrome_options.add_argument("--disable-dev-shm-usage")
 chrome_options.add_argument("--disable-gpu")
@@ -100,7 +100,7 @@ def main():
         t.start()
         threads.append(t)
 
-    for i in range(1, 10):
+    for i in range(1, 57):
         usn = f"1BI23CD{i:03d}"
         queue.put(usn)
 

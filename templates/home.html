@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Home</title>
+    <script>
+        function makeApiRequest() {
+            const branchCode = document.getElementById("branchDropdown").value;
+            const apiUrl = ``;
+
+            fetch(apiUrl)
+                .then(response => response.json())
+                .then(data => {
+                    console.log('API Response:', data);
+                    // Handle the API response here
+                })
+                .catch(error => {
+                    console.error('Error making API request:', error);
+                });
+        }
+    </script>
+</head>
+<body>
+<label for="branchDropdown">Select Branch:</label>
+<select id="branchDropdown">
+    <option value="CS">CS</option>
+    <option value="CD">CD</option>
+    <option value="EC">EC</option>
+    <option value="ME">ME</option>
+    <option value="CV">CV</option>
+    <option value="EE">EE</option>
+
+</select>
+
+<button onclick="makeApiRequest()">Submit</button>
+</body>
+</html>
