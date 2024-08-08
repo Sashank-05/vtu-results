@@ -1,19 +1,17 @@
 import random
 import time
-from queue import Queue
 import selenium.common.exceptions
 from selenium import webdriver
 from selenium.webdriver.chrome.service import Service
 import pytesseract
 from captcha import Captcha
-import threading
 import cv2 as cv
 import os
 
 pytesseract.pytesseract.tesseract_cmd = r'C:\Program Files\Tesseract-OCR\tesseract'
 
 chrome_options = webdriver.ChromeOptions()
-chrome_options.add_argument("--headless")
+# chrome_options.add_argument("--headless")
 chrome_options.add_argument("--no-sandbox")
 chrome_options.add_argument("--disable-dev-shm-usage")
 chrome_options.add_argument("--disable-gpu")
@@ -33,22 +31,17 @@ text, image, cap = None, None, None
 
 def handle_alert(usn):
     global fail_count, image
-    try:
-        alert = driver.switch_to.alert
-        if alert.text == "University Seat Number is not available or Invalid..!":
-            print("No results for: " + usn + "\n")
-            alert.accept()
 
-        elif alert.text == "Invalid captcha code !!!":
-            print("Invalid CAPTCHA Detected for USN: " + usn + "\n")
-            alert.accept()
-            fail_count += 1
+    alert = driver.switch_to.alert
+    if alert.text == "University Seat Number is not available or Invalid..!":
+        print("No results for: " + usn + "\n")
+        alert.accept()
 
-            fill_form(usn)
-    except Exception as e:
-        print(str(e)[:24])
-        print("Retrying same usn", usn)
+    elif alert.text == "Invalid captcha code !!!":
+        print("Invalid CAPTCHA Detected for USN: " + usn + "\n")
+        alert.accept()
         fail_count += 1
+
         fill_form(usn)
 
 
@@ -63,64 +56,67 @@ def fill_form(usn):
         usnbox.send_keys(usn)
         capt = driver.find_element('xpath', '//img[@alt="CAPTCHA code"]').screenshot("current.png")
         image = cv.imread("current.png")
-        text1 = Captcha(image).solve_invert()
-        text2 = Captcha(image).solve_color()
+        # text = Captcha(image).solve_invert()
+        text = Captcha(image).solve_color()
         # check if text 1 and text 2 are same
-        if text1 == text2:
-            text = text1
-        else:
-            text = text2
+        # if text1 == text2:
+        #    text = text1
+        # else:
+        #   text = text2
+        print(text)
     except selenium.common.exceptions.UnexpectedAlertPresentException:
         handle_alert(usn)
         cv.imwrite(f"invalid_captchas/{usn}_{random.Random(2000)}.png", image)
+
     try:
-
+        cap.send_keys(text)
+        driver.find_element('id', "submit").click()
         try:
-            cap.send_keys(text)
-            time.sleep(0.5)
-            driver.find_element('id', "submit").click()
-        except selenium.common.exceptions.NoSuchElementException:
+            handle_alert(usn)
+        except selenium.common.exceptions.NoAlertPresentException:
             pass
-        driver.implicitly_wait(50)
-        with open("pages/" + str(usn) + ".html", "w", encoding="utf8") as file:
-            file.write(driver.page_source)
+        except:
+            raise
     except Exception as e:
-        print(str(e)[:24])
-        handle_alert(usn)
-
-
-def worker(queue):
-    while True:
-        usn = queue.get()
-        if usn is None:
-            break
+        print(e)
         fill_form(usn)
-        queue.task_done()
+        return
+    finally:
+        if "Student Name" in driver.page_source:
+            with open("pages/" + str(usn) + ".html", "w", encoding="utf8") as file:
+                file.write(driver.page_source)
+        else:
+            print("Couldn't Save page for USN :", usn)
+            fill_form(usn)
+            return
 
 
 def main():
-    num_threads = 1
-    queue = Queue()
-
-    threads = []
-    for _ in range(num_threads):
-        t = threading.Thread(target=worker, args=(queue,))
-        t.start()
-        threads.append(t)
-
     for i in range(1, 57):
         usn = f"1BI23CD{i:03d}"
-        queue.put(usn)
-
-    queue.join()
-
-    for _ in range(num_threads):
-        queue.put(None)
-    for t in threads:
-        t.join()
+        fill_form(usn)
 
     print(f"Total failed attempts: {fail_count}")
 
 
+def check_pages():
+    cool = 0
+    nah = 0
+    whoisnah = []
+    for i in os.listdir("pages"):
+        if i.endswith(".html"):
+            with open("pages/" + i, "r", encoding="utf8") as file:
+                if "Student Name" in file.read():
+                    cool += 1
+                else:
+                    nah += 1
+                    whoisnah.append(i)
+
+    print(f"Cool attempts: {cool}")
+    print(f"Nah attempts: {nah}")
+    print(f"Whoisnah: {whoisnah}")
+
+
 if __name__ == "__main__":
     main()
+    check_pages()

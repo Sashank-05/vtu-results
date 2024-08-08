@@ -4,8 +4,8 @@ import pytesseract
 
 pytesseract.pytesseract.tesseract_cmd = r'C:\Program Files\Tesseract-OCR\tesseract'
 
-img1 = cv.imread('background_image_median.png')
-img2 = cv.imread('images/2.jpg')
+img1 = cv.imread('../background_image_median.png')
+img2 = cv.imread('../images/2.jpg')
 
 img1 = cv.resize(img1, (img2.shape[1], img2.shape[0]))
 img1 = cv.bitwise_not(img1)

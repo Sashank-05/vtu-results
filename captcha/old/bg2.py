@@ -3,7 +3,7 @@ import numpy as np
 import os
 
 # Path to the directory containing the images
-images_path = 'images'
+images_path = '../images'
 
 # Get a list of all image files in the directory
 image_files = [f for f in os.listdir(images_path) if f.endswith(('png', 'jpg', 'jpeg'))]
@@ -26,6 +26,6 @@ median_image = np.median(stack_images, axis=-1)
 median_image = np.uint8(median_image)
 
 # Save the resulting background image
-cv2.imwrite('background_image_median.png', median_image)
+cv2.imwrite('../background_image_median.png', median_image)
 
 print('Background image created and saved as background_image_median.png')
