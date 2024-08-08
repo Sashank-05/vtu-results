@@ -7,6 +7,8 @@ from collections import Counter
 class Captcha:
     def __init__(self, image: cv.imread):
         self.image = image
+        self.background = cv.imread('captcha/background_image_median.png')
+        self.ivtbackground = cv.bitwise_not(self.background)
 
     def solve_color(self):
         mask = cv.inRange(self.image, np.array([101, 101, 101]), np.array([104, 104, 104]))
@@ -19,6 +21,8 @@ class Captcha:
         return x
 
     def solve_invert(self):
-        raise NotImplementedError
+        result = cv.bitwise_or(self.image, self.ivtbackground)
+        text = [pytesseract.image_to_string(result) for x in range(3)]
+        return max(Counter(text))[:-1]
 
 

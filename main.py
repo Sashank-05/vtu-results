@@ -62,7 +62,7 @@ def fill_form(usn):
         usnbox.send_keys(usn)
         capt = driver.find_element('xpath', '//img[@alt="CAPTCHA code"]').screenshot("current.png")
         image = cv.imread("current.png")
-        text = Captcha(image).solve_color()
+        text = Captcha(image).solve_invert()
         print(text)
     except selenium.common.exceptions.UnexpectedAlertPresentException:
         handle_alert(usn)
