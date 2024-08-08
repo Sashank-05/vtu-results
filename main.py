@@ -1,4 +1,5 @@
 import random
+import time
 from queue import Queue
 import selenium.common.exceptions
 from selenium import webdriver
@@ -12,7 +13,7 @@ import os
 pytesseract.pytesseract.tesseract_cmd = r'C:\Program Files\Tesseract-OCR\tesseract'
 
 chrome_options = webdriver.ChromeOptions()
-# chrome_options.add_argument("--headless")
+chrome_options.add_argument("--headless")
 chrome_options.add_argument("--no-sandbox")
 chrome_options.add_argument("--disable-dev-shm-usage")
 chrome_options.add_argument("--disable-gpu")
@@ -62,18 +63,25 @@ def fill_form(usn):
         usnbox.send_keys(usn)
         capt = driver.find_element('xpath', '//img[@alt="CAPTCHA code"]').screenshot("current.png")
         image = cv.imread("current.png")
-        text = Captcha(image).solve_invert()
-        print(text)
+        text1 = Captcha(image).solve_invert()
+        text2 = Captcha(image).solve_color()
+        # check if text 1 and text 2 are same
+        if text1 == text2:
+            text = text1
+        else:
+            text = text2
     except selenium.common.exceptions.UnexpectedAlertPresentException:
         handle_alert(usn)
         cv.imwrite(f"invalid_captchas/{usn}_{random.Random(2000)}.png", image)
     try:
-        cap.send_keys(text)
+
         try:
+            cap.send_keys(text)
+            time.sleep(0.5)
             driver.find_element('id', "submit").click()
         except selenium.common.exceptions.NoSuchElementException:
             pass
-        driver.implicitly_wait(25)
+        driver.implicitly_wait(50)
         with open("pages/" + str(usn) + ".html", "w", encoding="utf8") as file:
             file.write(driver.page_source)
     except Exception as e:

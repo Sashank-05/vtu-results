@@ -1,11 +1,10 @@
 from bs4 import BeautifulSoup
 import pandas as pd
 
-credit_4=["BMATS101","BPHYS102"]
-credit_3=["BPOPS103","BESCK104B","BETCK105H"]
-credit_2=[]
-credit_1=["BENGK106","BKSKK107","BIDTK158"]
-
+credit_4 = ["BMATS101", "BPHYS102"]
+credit_3 = ["BPOPS103", "BESCK104B", "BETCK105H"]
+credit_2 = []
+credit_1 = ["BENGK106", "BKSKK107", "BIDTK158"]
 
 
 def extractor(saved_html):
@@ -23,52 +22,48 @@ def extractor(saved_html):
 
     df_marks = pd.DataFrame(table_data[1:9], columns=table_data[0])
 
-
-    sub_status=list(df_marks["Result"])
-    grade=[]
-    total_credits=0
+    sub_status = list(df_marks["Result"])
+    grade = []
+    total_credits = 0
     if "F" not in sub_status:
-        for i in list(df_marks["Total"]) :
-            if int(i) >=90:
+        for i in list(df_marks["Total"]):
+            if int(i) >= 90:
                 grade.append(10)
-            elif int(i)>=80:
+            elif int(i) >= 80:
                 grade.append(9)
-            elif int(i)>=70:
+            elif int(i) >= 70:
                 grade.append(8)
-            elif int(i)>=60:
+            elif int(i) >= 60:
                 grade.append(7)
-            elif int(i)>=50:
+            elif int(i) >= 50:
                 grade.append(6)
-            elif int(i)>=40:
+            elif int(i) >= 40:
                 grade.append(5)
 
-        #print(grade)
+        # print(grade)
 
-        df_marks.insert(6,"Grade Points",grade)
+        df_marks.insert(6, "Grade Points", grade)
 
-        credit_obtained=[]
-        for i,j in zip(list(df_marks["Grade Points"]),list(df_marks["Subject Code"])):
+        credit_obtained = []
+        for i, j in zip(list(df_marks["Grade Points"]), list(df_marks["Subject Code"])):
             if j in credit_4:
-                credit_obtained.append(4*i)
-                total_credits+=4*10
+                credit_obtained.append(4 * i)
+                total_credits += 4 * 10
             elif j in credit_3:
-                credit_obtained.append(3*i)
-                total_credits+=3*10
+                credit_obtained.append(3 * i)
+                total_credits += 3 * 10
             elif j in credit_2:
-                credit_obtained.append(2*i)
-                total_credits+=2*10
+                credit_obtained.append(2 * i)
+                total_credits += 2 * 10
             if j in credit_1:
-                credit_obtained.append(1*i)
-                total_credits+=1*10
+                credit_obtained.append(1 * i)
+                total_credits += 1 * 10
 
-        df_marks.insert(7,"Credits Obtained",credit_obtained)
+        df_marks.insert(7, "Credits Obtained", credit_obtained)
 
-        total_marks=sum([int(x) for x in list(df_marks["Total"])])
-        total_credits_obtained=sum([int(x) for x in list(df_marks["Credits Obtained"])])
+        total_marks = sum([int(x) for x in list(df_marks["Total"])])
+        total_credits_obtained = sum([int(x) for x in list(df_marks["Credits Obtained"])])
 
-        gpa=total_credits_obtained/total_credits
+        gpa = total_credits_obtained / total_credits
 
-    return df_marks,total_marks,gpa
-
-
-
+    return df_marks, total_marks, gpa
