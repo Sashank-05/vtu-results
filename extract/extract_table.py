@@ -26,6 +26,7 @@ def extractor(saved_html):
 
     sub_status=list(df_marks["Result"])
     grade=[]
+    total_credits=0
     if "F" not in sub_status:
         for i in list(df_marks["Total"]) :
             if int(i) >=90:
@@ -49,16 +50,25 @@ def extractor(saved_html):
         for i,j in zip(list(df_marks["Grade Points"]),list(df_marks["Subject Code"])):
             if j in credit_4:
                 credit_obtained.append(4*i)
+                total_credits+=4*10
             elif j in credit_3:
                 credit_obtained.append(3*i)
+                total_credits+=3*10
             elif j in credit_2:
                 credit_obtained.append(2*i)
+                total_credits+=2*10
             if j in credit_1:
                 credit_obtained.append(1*i)
+                total_credits+=1*10
 
         df_marks.insert(7,"Credits Obtained",credit_obtained)
 
-    return df_marks
+        total_marks=sum([int(x) for x in list(df_marks["Total"])])
+        total_credits_obtained=sum([int(x) for x in list(df_marks["Credits Obtained"])])
+
+        gpa=total_credits_obtained/total_credits
+
+    return df_marks,total_marks,gpa
 
 
 
