@@ -1,3 +1,4 @@
-./pages
-./.venv
-./.idea
+/pages
+/.venv
+/.idea
+/pages/
