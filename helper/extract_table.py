@@ -12,7 +12,7 @@ def extractor(saved_html):
         soup = BeautifulSoup(file, "lxml")
 
     rows = soup.find_all("div", class_="divTableRow")
-    #tables = pd.read_html(str(soup))
+    tables = pd.read_html(str(soup))
 
     table_data = []
     for row in rows:
@@ -26,6 +26,9 @@ def extractor(saved_html):
     sub_status = list(df_marks["Result"])
     grade = []
     total_credits = 0
+
+    usn=(tables[0][1][0]).strip(":")
+    name=(tables[0][1][1]).strip(":")
 
     if "F" not in sub_status:
         for i in list(df_marks["Total"]):
@@ -84,4 +87,4 @@ def extractor(saved_html):
         df_marks=df_marks.drop('Credits Obtained',axis=1)
         df_marks=df_marks.drop('Result',axis=1)
 
-    return df_marks , total_marks ,gpa , res
+    return usn,name,df_marks , total_marks ,gpa , res
