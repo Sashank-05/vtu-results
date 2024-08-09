@@ -20,7 +20,7 @@ def extractor(saved_html):
         row_data = [cell.text.strip() for cell in cells]
         table_data.append(row_data)
 
-    df_marks = pd.DataFrame(table_data[1:8], columns=table_data[0])
+    df_marks = pd.DataFrame(table_data[1:9], columns=table_data[0])
     df_marks=df_marks.drop('Announced / Updated on',axis=1)
 
     sub_status = list(df_marks["Result"])
@@ -68,6 +68,7 @@ def extractor(saved_html):
 
         df_marks=df_marks.drop('Grade Points',axis=1)
         df_marks=df_marks.drop('Credits Obtained',axis=1)
+        df_marks=df_marks.drop('Result',axis=1)
 
 
         gpa = total_credits_obtained / total_credits
@@ -78,5 +79,9 @@ def extractor(saved_html):
         gpa="NAN"
         count=sub_status.count("F")
         res=f"{count} Fail"
+
+        df_marks=df_marks.drop('Grade Points',axis=1)
+        df_marks=df_marks.drop('Credits Obtained',axis=1)
+        df_marks=df_marks.drop('Result',axis=1)
 
     return df_marks , total_marks ,gpa , res
