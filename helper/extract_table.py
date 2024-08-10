@@ -26,9 +26,9 @@ def extractor(saved_html):
     sub_status = list(df_marks["Result"])
     grade = []
     total_credits = 0
-
-    usn=(tables[0][1][0]).strip(":")
-    name=(tables[0][1][1]).strip(":")
+    details=[]
+    details.append(tables[0][1][0].strip(":"))
+    details.append(tables[0][1][1].strip(":"))
 
     if "F" not in sub_status:
         for i in list(df_marks["Total"]):
@@ -66,25 +66,23 @@ def extractor(saved_html):
 
         df_marks.insert(7, "Credits Obtained", credit_obtained)
 
-        total_marks = sum([int(x) for x in list(df_marks["Total"])])
+        details.append( sum([int(x) for x in list(df_marks["Total"])]))
         total_credits_obtained = sum([int(x) for x in list(df_marks["Credits Obtained"])])
 
-        df_marks=df_marks.drop('Grade Points',axis=1)
-        df_marks=df_marks.drop('Credits Obtained',axis=1)
-        df_marks=df_marks.drop('Result',axis=1)
+        
 
 
-        gpa = total_credits_obtained / total_credits
-        res="PASS"
+        details.append( total_credits_obtained / total_credits)
+        details.append("PASS")
     
     else:
-        total_marks = sum([int(x) for x in list(df_marks["Total"])])
-        gpa="NAN"
+        details.append( sum([int(x) for x in list(df_marks["Total"])]))
+        details.append("NAN")
         count=sub_status.count("F")
-        res=f"{count} Fail"
+        details.append(f"{count} Fail")
 
-        df_marks=df_marks.drop('Grade Points',axis=1)
-        df_marks=df_marks.drop('Credits Obtained',axis=1)
-        df_marks=df_marks.drop('Result',axis=1)
+        
 
-    return usn,name,df_marks , total_marks ,gpa , res
+    return df_marks,details 
+
+#list return usn ,name,total,gpa,res
