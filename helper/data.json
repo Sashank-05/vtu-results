@@ -1,0 +1,40 @@
+{
+    "BMATS101":{
+        "Name":"Mathematics for engineering",
+        "Credits":4
+    },
+    "BPHYS102":{
+        "Name":"Physics for engineering",
+        "Credits":4
+    },
+    "BPOPS103":{
+        "Name":"Principles of programing using C",
+        "Credits":3
+    },
+    "BESCK104B":{
+        "Name":"Introduction to Electrical Engineering",
+        "Credits":3
+    },
+    "BETCK105H":{
+        "Name":" Introduction to Internet of Things (IOT)",
+        "Credits":3
+    },
+    "BENGK106":{
+        "Name":"Communicative English",
+        "Credits":1
+    },
+    "BKSKK107":{
+        "Name":"Samskrutika Kannada",
+        "Credits":1
+    },
+    "BIDTK158":{
+        "Name":"Invation and Design Thinking",
+        "Credits":1
+    },
+    "BKBKK107":{
+        "Name":"Balake Kannada",
+        "Credits":1
+    }
+
+    
+}
