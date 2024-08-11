@@ -7,12 +7,12 @@ import pytesseract
 from captcha import Captcha
 import cv2 as cv
 import os
-from helper import dbhandler,extract_table,processing,df_to_csv
+from helper import dbhandler, extract_table, processing, df_to_csv
 
 pytesseract.pytesseract.tesseract_cmd = r'C:\Program Files\Tesseract-OCR\tesseract'
 
 chrome_options = webdriver.ChromeOptions()
-# chrome_options.add_argument("--headless")
+chrome_options.add_argument("--headless")
 chrome_options.add_argument("--no-sandbox")
 chrome_options.add_argument("--disable-dev-shm-usage")
 chrome_options.add_argument("--disable-gpu")
@@ -117,24 +117,25 @@ def check_pages():
     print(f"Nah attempts: {nah}")
     print(f"Whoisnah: {whoisnah}")
 
-def save_to_db():
-    files=os.listdir("pages")
-    df,_=extract_table.extractor(fr"pages\{files[0]}")
-    columns=processing.get_subject_code(df)
-    
-    
 
-    table=dbhandler.db_handler()
-    table.create_table_cloumns(columns)
+def save_to_db():
+    files = os.listdir("pages")
+    df, _ = extract_table.extractor(fr"pages\{files[0]}")
+    columns = processing.get_subject_code(df)
+
+    table = dbhandler.DBHandler()
+    table.create_table_columns('BI23CD_SEM_1', columns)
 
     for file in files:
-        df_new,other=extract_table.extractor(fr"pages\{file}")
-        df_to_csv.convert(df_new,other)
-        inte,ext,lis=processing.df_to_sql(df_new,other)
-        table.push_data_into_table(inte,ext,lis)
+        df_new, other = extract_table.extractor(fr"pages\{file}")
+        df_to_csv.convert(df_new, other)
+        inte, ext, lis = processing.df_to_sql(df_new, other)
+        table.push_data_into_table('BI23CD_SEM_1', inte, ext, lis)
+
+    table.close()
 
 
 if __name__ == "__main__":
-    #main()
-    #check_pages()
-    save_to_db() 
+    # main()
+    # check_pages()
+    save_to_db()

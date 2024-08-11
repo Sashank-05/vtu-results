@@ -5,7 +5,7 @@ import pandas as pd
 credit_4 = ["BMATS101", "BPHYS102"]
 credit_3 = ["BPOPS103", "BESCK104B", "BETCK105H"]
 credit_2 = []
-credit_1 = ["BENGK106", "BKSKK107", "BIDTK158","BKBKK107"]
+credit_1 = ["BENGK106", "BKSKK107", "BIDTK158", "BKBKK107"]
 
 
 def extractor(saved_html):
@@ -23,12 +23,12 @@ def extractor(saved_html):
         table_data.append(row_data)
 
     df_marks = pd.DataFrame(table_data[1:9], columns=table_data[0])
-    df_marks=df_marks.drop('Announced / Updated on',axis=1)
+    df_marks = df_marks.drop('Announced / Updated on', axis=1)
 
     sub_status = list(df_marks["Result"])
     grade = []
     total_credits = 0
-    details=[]
+    details = []
     details.append(tables[0][1][0].strip(":"))
     details.append(tables[0][1][1].strip(":"))
 
@@ -68,23 +68,18 @@ def extractor(saved_html):
 
         df_marks.insert(7, "Credits Obtained", credit_obtained)
 
-        details.append( sum([int(x) for x in list(df_marks["Total"])]))
+        details.append(sum([int(x) for x in list(df_marks["Total"])]))
         total_credits_obtained = sum([int(x) for x in list(df_marks["Credits Obtained"])])
 
-        
-
-
-        details.append( total_credits_obtained / total_credits)
+        details.append(total_credits_obtained / total_credits)
         details.append("PASS")
-    
+
     else:
-        details.append( sum([int(x) for x in list(df_marks["Total"])]))
+        details.append(sum([int(x) for x in list(df_marks["Total"])]))
         details.append("NAN")
-        count=sub_status.count("F")
+        count = sub_status.count("F")
         details.append(f"{count} Fail")
 
-        
+    return df_marks, details
 
-    return df_marks,details 
-
-#list return usn ,name,total,gpa,res
+    # list return usn ,name,total,gpa,res

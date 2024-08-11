@@ -1,49 +1,62 @@
-import sqlite3 
+import sqlite3
 
-class db_handler:
+
+class DBHandler:
     def __init__(self, db_path='database.db'):
-        self.db_path=db_path
+        self.db_path = db_path
+        self.connection = self.connect()  # Establish a single connection
+        self.cursor = self.connection.cursor()
 
-    def connect(self, db_path):
-        return sqlite3.connect(db_path)
-        
-    def create_table_cloumns(self,sub_columns:list): #table name also should be a parameter which should be taken from user
-        sql_create_table="""CREATE TABLE BI23CD_SEM_1(
+    def connect(self):
+        return sqlite3.connect(self.db_path, check_same_thread=False)
+
+    def create_table_columns(self, table_name: str, sub_columns: list):
+        sql_create_table = f"""CREATE TABLE IF NOT EXISTS {table_name} (
                     USN VARCHAR(12),
-                    NAME VARCHAR(25))
-            """
-        connection=self.connect(self.db_path)
-        cur=connection.cursor()
-        cur.execute(sql_create_table)
-        connection.commit()
+                    NAME VARCHAR(25)
+            );"""
+
+        self.cursor.execute(sql_create_table)
 
         for sub in sub_columns:
-            sql = f"ALTER TABLE BI23CD_SEM_1 ADD {sub} VARCHAR(100);"
-            cur.execute(sql)
-            connection.commit()
+            sql = f"ALTER TABLE {table_name} ADD COLUMN {sub} VARCHAR(100);"
+            self.cursor.execute(sql)
 
-        connection.close()
+        self.connection.commit()
 
-    def push_data_into_table(self, inte: list, ext: list,  other: list):
-        sql = """INSERT INTO BI23CD_SEM_1 VALUES
-            (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ? )"""
-        values = (other[0], other[1], inte[0], ext[0], inte[1], ext[1], inte[2], ext[2], 
-              inte[3], ext[3], inte[4], ext[4], inte[5], ext[5], inte[6], ext[6],
-              inte[7], ext[7],  other[2], other[3], other[4])
-        connection=self.connect(self.db_path)
-        cur=connection.cursor()
-        cur.execute(sql, values)
-        connection.commit()
-        connection.close()
+    def push_data_into_table(self, table_name: str, inte: list, ext: list, other: list):
+        sql = f"""INSERT INTO {table_name} VALUES (
+            ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ? 
+        )"""
+        values = (other[0], other[1], inte[0], ext[0], inte[1], ext[1],
+                  inte[2], ext[2], inte[3], ext[3], inte[4], ext[4],
+                  inte[5], ext[5], inte[6], ext[6], inte[7], ext[7],
+                  other[2], other[3], other[4])
 
-    def max(colummn_name:str):
-        pass
+        self.cursor.execute(sql, values)
+        self.connection.commit()
 
-        
-        
+    def get_student_marks(self, id, sem, usn):
+        usn = " " + usn
+        sql = "SELECT * FROM {id}_SEM_{sem} WHERE USN LIKE ?"
+        self.cursor.execute(sql.format(id=id, sem=sem), (usn,))
+        result = self.cursor.fetchall()
+        return result
 
+    def get_semester_marks(self, id, sem):
+        sql = "SELECT * FROM {id}_SEM_{sem}"
+        self.cursor.execute(sql.format(id=id, sem=sem))
+        result = self.cursor.fetchall()
+        return result
 
+    def max(self, table_name: str, column_name: str):
+        sql = f"SELECT MAX({column_name}) FROM {table_name}"
 
-    
+        self.cursor.execute(sql)
+        result = self.cursor.fetchone()
+        return result[0] if result else None
 
-
+    def close(self):
+        if self.connection:
+            self.cursor.close()
+            self.connection.close()
