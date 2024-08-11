@@ -41,6 +41,22 @@
         .error {
             color: red;
         }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+
+        th {
+            background-color: #f2f2f2;
+        }
     </style>
     <script>
         function getStudentMarks() {
@@ -54,8 +70,8 @@
                     resultsDiv.innerHTML = "<h3>Student Marks:</h3>";
 
                     for (const [sem, marks] of Object.entries(data)) {
-                        resultsDiv.innerHTML += `<strong>Semester ${sem}:</strong><br>`;
-                        resultsDiv.innerHTML += `<pre>${JSON.stringify(marks, null, 2)}</pre>`;
+                        resultsDiv.innerHTML += `<strong>Semester ${sem}:</strong>`;
+                        resultsDiv.innerHTML += createTableFromMarks(marks);
                     }
                 })
                 .catch(error => {
@@ -75,13 +91,36 @@
                 .then(data => {
                     const resultsDiv = document.getElementById("results");
                     resultsDiv.innerHTML = "<h3>Semester Marks:</h3>";
-                    resultsDiv.innerHTML += `<pre>${JSON.stringify(data, null, 2)}</pre>`;
+                    resultsDiv.innerHTML += createTableFromMarks(data);
                 })
                 .catch(error => {
                     const resultsDiv = document.getElementById("results");
                     resultsDiv.innerHTML = `<p class="error">Error: ${error.message}</p>`;
                     console.error('Error making API request:', error);
                 });
+        }
+
+        function createTableFromMarks(marks) {
+            let table = '<table>';
+            table += '<tr>';
+
+            // Create table headers
+            for (const key in marks[0]) {
+                table += `<th>${key}</th>`;
+            }
+            table += '</tr>';
+
+            // Create table rows
+            marks.forEach(mark => {
+                table += '<tr>';
+                for (const value of Object.values(mark)) {
+                    table += `<td>${value}</td>`;
+                }
+                table += '</tr>';
+            });
+
+            table += '</table>';
+            return table;
         }
     </script>
 </head>
@@ -96,9 +135,9 @@
 
     <label for="branchDropdown">Select Branch:</label>
     <select id="branchDropdown">
-        <option value="BI23CD">BI23CD</option>
-        <option value="BI23CS">BI23CS</option>
-        <option value="BI23EC">BI23EC</option>
+        <option value="BI23CD">CD</option>
+        <option value="BI23CS">CS</option>
+        <option value="BI23EC">EC</option>
         <!-- Add more branches as needed -->
     </select>
 
