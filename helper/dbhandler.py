@@ -28,7 +28,7 @@ class DBHandler:
         sql = f"""INSERT INTO {table_name} VALUES (
             ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ? 
         )"""
-        values = (other[0], other[1], inte[0], ext[0], inte[1], ext[1],
+        values = (other[0].strip(), other[1], inte[0], ext[0], inte[1], ext[1],
                   inte[2], ext[2], inte[3], ext[3], inte[4], ext[4],
                   inte[5], ext[5], inte[6], ext[6], inte[7], ext[7],
                   other[2], other[3], other[4])
@@ -37,7 +37,6 @@ class DBHandler:
         self.connection.commit()
 
     def get_student_marks(self, id, sem, usn):
-        usn = " " + usn
         sql = "SELECT * FROM {id}_SEM_{sem} WHERE USN LIKE ?"
         self.cursor.execute(sql.format(id=id, sem=sem), (usn,))
         result = self.cursor.fetchall()
