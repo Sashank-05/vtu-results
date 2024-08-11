@@ -1,6 +1,3 @@
-import pandas as pd
-
-
 def convert(df, lis):
     df["Total Marks"] = lis[2]
     df["GPA"] = lis[3]
