@@ -7,6 +7,7 @@ import pytesseract
 from captcha import Captcha
 import cv2 as cv
 import os
+from helper import dbhandler,extract_table,processing,df_to_csv
 
 pytesseract.pytesseract.tesseract_cmd = r'C:\Program Files\Tesseract-OCR\tesseract'
 
@@ -116,7 +117,24 @@ def check_pages():
     print(f"Nah attempts: {nah}")
     print(f"Whoisnah: {whoisnah}")
 
+def save_to_db():
+    files=os.listdir("pages")
+    df,_=extract_table.extractor(fr"pages\{files[0]}")
+    columns=processing.get_subject_code(df)
+    
+    
+
+    table=dbhandler.db_handler()
+    table.create_table_cloumns(columns)
+
+    for file in files:
+        df_new,other=extract_table.extractor(fr"pages\{file}")
+        df_to_csv.convert(df_new,other)
+        inte,ext,lis=processing.df_to_sql(df_new,other)
+        table.push_data_into_table(inte,ext,lis)
+
 
 if __name__ == "__main__":
-    main()
-    check_pages()
+    #main()
+    #check_pages()
+    save_to_db() 

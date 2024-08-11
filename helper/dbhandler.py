@@ -34,7 +34,10 @@ class db_handler:
         cur=connection.cursor()
         cur.execute(sql, values)
         connection.commit()
+        connection.close()
 
+    def max(colummn_name:str):
+        pass
 
         
         

@@ -1,10 +1,11 @@
 from bs4 import BeautifulSoup
+from io import StringIO
 import pandas as pd
 
 credit_4 = ["BMATS101", "BPHYS102"]
 credit_3 = ["BPOPS103", "BESCK104B", "BETCK105H"]
 credit_2 = []
-credit_1 = ["BENGK106", "BKSKK107", "BIDTK158"]
+credit_1 = ["BENGK106", "BKSKK107", "BIDTK158","BKBKK107"]
 
 
 def extractor(saved_html):
@@ -12,7 +13,8 @@ def extractor(saved_html):
         soup = BeautifulSoup(file, "lxml")
 
     rows = soup.find_all("div", class_="divTableRow")
-    tables = pd.read_html(str(soup))
+    html_string = str(soup)
+    tables = pd.read_html(StringIO(html_string))
 
     table_data = []
     for row in rows:
