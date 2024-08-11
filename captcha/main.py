@@ -1,7 +1,8 @@
+from collections import Counter
+
 import cv2 as cv
 import numpy as np
 import pytesseract
-from collections import Counter
 
 
 class Captcha:
@@ -24,5 +25,3 @@ class Captcha:
         result = cv.bitwise_or(self.image, self.ivtbackground)
         text = [pytesseract.image_to_string(result) for x in range(3)]
         return max(Counter(text))[:-1]
-
-

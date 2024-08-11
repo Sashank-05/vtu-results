@@ -1,4 +1,5 @@
 from flask import Flask, render_template, jsonify
+
 from helper import dbhandler
 
 app = Flask(__name__)
@@ -24,7 +25,12 @@ def get_student(usn):
 
     """
     try:
-        student_marks = db.get_student_marks(usn)
+        student_marks = dict()
+        for i in range(1, 8 + 1):
+            try:
+                student_marks[i] = db.get_student_marks("BI23CD", i, usn)
+            except Exception as e:
+                pass
         print(student_marks)
         return jsonify(student_marks), 200
     except Exception as e:
@@ -44,7 +50,11 @@ def get_sem_marks(id, sem):
         sem_marks = db.get_semester_marks(id, sem)
         return jsonify(sem_marks)
     except Exception as e:
-        return jsonify({'error': str(e)}), 500
+        # if error is table not found then scrape the page
+        if "no such table" in str(e):
+            return jsonify({'message': 'Scraping the page'}), 200
+        else:
+            return jsonify({'error': str(e)}), 500
 
 
 if __name__ == '__main__':

@@ -1,6 +1,6 @@
-from bs4 import BeautifulSoup
 from io import StringIO
 import pandas as pd
+from bs4 import BeautifulSoup
 
 credit_4 = ["BMATS101", "BPHYS102"]
 credit_3 = ["BPOPS103", "BESCK104B", "BETCK105H"]

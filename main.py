@@ -1,12 +1,13 @@
+import os
 import random
-import time
+
+import cv2 as cv
+import pytesseract
 import selenium.common.exceptions
 from selenium import webdriver
 from selenium.webdriver.chrome.service import Service
-import pytesseract
+
 from captcha import Captcha
-import cv2 as cv
-import os
 from helper import dbhandler, extract_table, processing, df_to_csv
 
 pytesseract.pytesseract.tesseract_cmd = r'C:\Program Files\Tesseract-OCR\tesseract'

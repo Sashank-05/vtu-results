@@ -1,14 +1,19 @@
 import os
 import random
+import logging
+
 import cv2 as cv
 import pytesseract
 from selenium import webdriver
-from selenium.webdriver.chrome.service import Service
 from selenium.common.exceptions import UnexpectedAlertPresentException, NoAlertPresentException
-from helper import dbhandler, extract_table, processing, df_to_csv
+from selenium.webdriver.chrome.service import Service
+
 from captcha import Captcha
+from helper import dbhandler, extract_table, processing
 
 pytesseract.pytesseract.tesseract_cmd = r'C:\Program Files\Tesseract-OCR\tesseract'
+
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
 
 class FillForm:
@@ -37,18 +42,18 @@ class FillForm:
     def handle_alert(self, usn):
         alert = self.driver.switch_to.alert
         if alert.text == "University Seat Number is not available or Invalid..!":
-            print("No results for: " + usn + "\n")
+            logging.info("No results for: %s", usn)
             alert.accept()
 
         elif alert.text == "Invalid captcha code !!!":
-            print("Invalid CAPTCHA Detected for USN: " + usn + "\n")
+            logging.info("Invalid CAPTCHA Detected for USN: %s", usn)
             alert.accept()
             self.fail_count += 1
 
             self.fill_form(usn)
 
     def fill_form(self, usn):
-        print(usn)
+        logging.info("Processing USN: %s", usn)
         try:
             self.driver.get(self.base_url)
             self.driver.implicitly_wait(25)
@@ -58,7 +63,7 @@ class FillForm:
             capt = self.driver.find_element('xpath', '//img[@alt="CAPTCHA code"]').screenshot("current.png")
             image = cv.imread("current.png")
             text = Captcha(image).solve_color()
-            print(text)
+            logging.info("CAPTCHA Text: %s", text)
         except UnexpectedAlertPresentException:
             self.handle_alert(usn)
             cv.imwrite(f"{self.invalid_captcha_dir}/{usn}_{random.randint(1000, 9999)}.png", image)
@@ -74,7 +79,7 @@ class FillForm:
             except Exception as e:
                 raise e
         except Exception as e:
-            print(e)
+            logging.error("Error occurred: %s", e)
             self.fill_form(usn)
             return
         finally:
@@ -82,7 +87,7 @@ class FillForm:
                 with open(f"pages/{usn}.html", "w", encoding="utf8") as file:
                     file.write(self.driver.page_source)
             else:
-                print(f"Couldn't Save page for USN: {usn}")
+                logging.warning("Couldn't Save page for USN: %s", usn)
                 self.fill_form(usn)
                 return
 
@@ -91,7 +96,7 @@ class FillForm:
             usn = f"{self.usn_prefix}{i:03d}"
             self.fill_form(usn)
 
-        print(f"Total failed attempts: {self.fail_count}")
+        logging.info("Total failed attempts: %d", self.fail_count)
 
     def check_pages(self):
         cool = 0
@@ -106,9 +111,9 @@ class FillForm:
                         nah += 1
                         whoisnah.append(i)
 
-        print(f"Cool attempts: {cool}")
-        print(f"Nah attempts: {nah}")
-        print(f"Whoisnah: {whoisnah}")
+        logging.info("Cool attempts: %d", cool)
+        logging.info("Nah attempts: %d", nah)
+        logging.info("Whoisnah: %s", whoisnah)
 
     def save_to_db(self):
         files = os.listdir("pages")

@@ -2,36 +2,119 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Home</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f5f5f5;
+            padding: 20px;
+        }
+
+        label, select, input, button {
+            display: block;
+            margin: 10px 0;
+            font-size: 16px;
+        }
+
+        select, input {
+            padding: 5px;
+            width: 200px;
+        }
+
+        button {
+            padding: 10px 20px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+
+        .results {
+            margin-top: 20px;
+        }
+
+        .error {
+            color: red;
+        }
+    </style>
     <script>
-        function makeApiRequest() {
-            const branchCode = document.getElementById("branchDropdown").value;
-            const apiUrl = ``;
+        function getStudentMarks() {
+            const usn = document.getElementById("usnInput").value;
+            const apiUrl = `/api/v1/student/${usn}`;
 
             fetch(apiUrl)
                 .then(response => response.json())
                 .then(data => {
-                    console.log('API Response:', data);
-                    // Handle the API response here
+                    const resultsDiv = document.getElementById("results");
+                    resultsDiv.innerHTML = "<h3>Student Marks:</h3>";
+
+                    for (const [sem, marks] of Object.entries(data)) {
+                        resultsDiv.innerHTML += `<strong>Semester ${sem}:</strong><br>`;
+                        resultsDiv.innerHTML += `<pre>${JSON.stringify(marks, null, 2)}</pre>`;
+                    }
                 })
                 .catch(error => {
+                    const resultsDiv = document.getElementById("results");
+                    resultsDiv.innerHTML = `<p class="error">Error: ${error.message}</p>`;
+                    console.error('Error making API request:', error);
+                });
+        }
+
+        function getSemMarks() {
+            const branchCode = document.getElementById("branchDropdown").value;
+            const sem = document.getElementById("semDropdown").value;
+            const apiUrl = `/api/v1/${branchCode}/${sem}`;
+
+            fetch(apiUrl)
+                .then(response => response.json())
+                .then(data => {
+                    const resultsDiv = document.getElementById("results");
+                    resultsDiv.innerHTML = "<h3>Semester Marks:</h3>";
+                    resultsDiv.innerHTML += `<pre>${JSON.stringify(data, null, 2)}</pre>`;
+                })
+                .catch(error => {
+                    const resultsDiv = document.getElementById("results");
+                    resultsDiv.innerHTML = `<p class="error">Error: ${error.message}</p>`;
                     console.error('Error making API request:', error);
                 });
         }
     </script>
 </head>
 <body>
-<label for="branchDropdown">Select Branch:</label>
-<select id="branchDropdown">
-    <option value="CS">CS</option>
-    <option value="CD">CD</option>
-    <option value="EC">EC</option>
-    <option value="ME">ME</option>
-    <option value="CV">CV</option>
-    <option value="EE">EE</option>
+    <h1>Student Marks Retrieval</h1>
 
-</select>
+    <label for="usnInput">Enter USN:</label>
+    <input type="text" id="usnInput" placeholder="Enter USN">
+    <button onclick="getStudentMarks()">Get Student Marks</button>
 
-<button onclick="makeApiRequest()">Submit</button>
+    <hr>
+
+    <label for="branchDropdown">Select Branch:</label>
+    <select id="branchDropdown">
+        <option value="BI23CD">BI23CD</option>
+        <option value="BI23CS">BI23CS</option>
+        <option value="BI23EC">BI23EC</option>
+        <!-- Add more branches as needed -->
+    </select>
+
+    <label for="semDropdown">Select Semester:</label>
+    <select id="semDropdown">
+        <option value="1">1</option>
+        <option value="2">2</option>
+        <option value="3">3</option>
+        <option value="4">4</option>
+        <option value="5">5</option>
+        <option value="6">6</option>
+        <option value="7">7</option>
+        <option value="8">8</option>
+    </select>
+    <button onclick="getSemMarks()">Get Semester Marks</button>
+
+    <div id="results" class="results"></div>
 </body>
 </html>

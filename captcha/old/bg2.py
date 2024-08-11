@@ -1,6 +1,7 @@
+import os
+
 import cv2
 import numpy as np
-import os
 
 # Path to the directory containing the images
 images_path = '../images'
