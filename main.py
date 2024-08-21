@@ -13,7 +13,7 @@ from helper import dbhandler, extract_table, processing, df_to_csv
 pytesseract.pytesseract.tesseract_cmd = r'C:\Program Files\Tesseract-OCR\tesseract'
 
 chrome_options = webdriver.ChromeOptions()
-chrome_options.add_argument("--headless")
+#chrome_options.add_argument("--headless")
 chrome_options.add_argument("--no-sandbox")
 chrome_options.add_argument("--disable-dev-shm-usage")
 chrome_options.add_argument("--disable-gpu")
@@ -51,7 +51,7 @@ def fill_form(usn):
     global text, cap, image
     print(usn)
     try:
-        driver.get("https://results.vtu.ac.in/DJcbcs24/index.php")
+        driver.get("https://results.vtu.ac.in/JJEcbcs24/index.php")
         driver.implicitly_wait(25)
         usnbox = driver.find_element("name", "lns")
         cap = driver.find_element("name", "captchacode")
@@ -94,7 +94,7 @@ def fill_form(usn):
 
 
 def main():
-    for i in range(1, 57):
+    for i in range(1,57):
         usn = f"1BI23CD{i:03d}"
         fill_form(usn)
 
@@ -125,18 +125,30 @@ def save_to_db():
     columns = processing.get_subject_code(df)
 
     table = dbhandler.DBHandler()
-    table.create_table_columns('BI23CD_SEM_1', columns)
+    table.create_table_columns('BI23CD_SEM_2', columns)
 
     for file in files:
         df_new, other = extract_table.extractor(fr"pages\{file}")
         df_to_csv.convert(df_new, other)
         inte, ext, lis = processing.df_to_sql(df_new, other)
-        table.push_data_into_table('BI23CD_SEM_1', inte, ext, lis)
+        table.push_data_into_table('BI23CD_SEM_2', inte, ext, lis)
 
     table.close()
 
 
+def show_columns():
+    table = dbhandler.DBHandler()
+    columns=table.get_columns('BI23CD_SEM_2')
+    print(columns)
+
+
+
+
+
 if __name__ == "__main__":
-    # main()
-    # check_pages()
-    save_to_db()
+    #main()
+    #check_pages()
+    #save_to_db()
+    show_columns()
+
+

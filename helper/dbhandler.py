@@ -75,6 +75,19 @@ class DBHandler:
         self.cursor.execute(sql)
         result = self.cursor.fetchone()
         return result[0] if result else None
+    
+    @reset_cursor
+    def get_columns(self,table_name:str):
+        cols=[]
+        data=self.cursor.execute(f'''SELECT * FROM {table_name}''') 
+        for column in data.description: 
+            cols.append(column[0]) 
+
+        return(cols)
+    
+    
+
+
 
     def close(self):
         if self.connection:

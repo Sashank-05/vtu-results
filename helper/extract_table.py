@@ -2,10 +2,10 @@ from io import StringIO
 import pandas as pd
 from bs4 import BeautifulSoup
 
-credit_4 = ["BMATS101", "BPHYS102"]
-credit_3 = ["BPOPS103", "BESCK104B", "BETCK105H"]
+credit_4 = ["BMATS101", "BPHYS102","BMATS201","BCHES202","BPHYS202"]
+credit_3 = ["BPOPS103","BPOPS203", "BESCK104B", "BETCK105H","BCEDK203","BPLCK205B","BESCK204C", "BETCK205H","BESCK204D"]
 credit_2 = []
-credit_1 = ["BENGK106", "BKSKK107", "BIDTK158", "BKBKK107"]
+credit_1 = ["BENGK106", "BKSKK107","BKSKK207", "BIDTK158","BIDTK258", "BKBKK107","BKBKK207","BPWSK206","BICOK207","BSFHK258"]
 
 
 def extractor(saved_html):
@@ -56,18 +56,21 @@ def extractor(saved_html):
             if j in credit_4:
                 credit_obtained.append(4 * i)
                 total_credits += 4 * 1
-            elif j in credit_3:
+            elif j.strip() in credit_3:
                 credit_obtained.append(3 * i)
                 total_credits += 3 * 1
             elif j in credit_2:
                 credit_obtained.append(2 * i)
                 total_credits += 2 * 1
-            if j in credit_1:
+            elif j in credit_1:
                 credit_obtained.append(1 * i)
                 total_credits += 1 * 1
+            else:
+                credit_obtained.append(0)
+        
 
         df_marks.insert(7, "Credits Obtained", credit_obtained)
-
+        print(df_marks)
         details.append(sum([int(x) for x in list(df_marks["Total"])]))
         total_credits_obtained = sum([int(x) for x in list(df_marks["Credits Obtained"])])
 
@@ -75,10 +78,15 @@ def extractor(saved_html):
         details.append("PASS")
 
     else:
-        details.append(sum([int(x) for x in list(df_marks["Total"])]))
+        try:
+            details.append(sum([int(x) for x in list(df_marks["Total"])]))
+        except:
+             details.append(" ")
+
         details.append("NAN")
         count = sub_status.count("F")
         details.append(f"{count} Fail")
+    
 
     return df_marks, details
 
