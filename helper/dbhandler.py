@@ -87,8 +87,6 @@ class DBHandler:
     
     
 
-
-
     def close(self):
         if self.connection:
             self.cursor.close()

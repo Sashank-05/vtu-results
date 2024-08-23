@@ -28,14 +28,16 @@ def get_student(usn):
         student_marks = dict()
         for i in range(1, 8 + 1):
             try:
-                student_marks[i] = db.get_student_marks("BI23CD", i, usn)
+                student_marks[i] = list(db.get_student_marks("BI23CD", i, usn))
+                col=db.get_columns(f"BI23CD_SEM_2")
             except Exception as e:
                 pass
-        print(student_marks)
-        return jsonify(student_marks), 200
+        
+        print(student_marks,col)
+        return jsonify(student_marks,col), 200
     except Exception as e:
         return jsonify({'error': str(e)}), 500
-
+ 
 
 @app.route(apiv1 + '<string:id>/<string:sem>', methods=['GET'])
 def get_sem_marks(id, sem):
@@ -48,7 +50,9 @@ def get_sem_marks(id, sem):
     """
     try:
         sem_marks = db.get_semester_marks(id, sem)
-        return jsonify(sem_marks)
+        columns=db.get_columns("BI23CD_SEM_2")
+        
+        return jsonify(sem_marks,columns)
     except Exception as e:
         # if error is table not found then scrape the page
         if "no such table" in str(e):

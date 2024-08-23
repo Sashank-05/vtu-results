@@ -1,159 +1,224 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Home</title>
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #f5f5f5;
-            padding: 20px;
-        }
+      body {
+        font-family: Arial, sans-serif;
+        background-color: #f5f5f5;
+        padding: 20px;
+      }
 
-        label, select, input, button {
-            display: block;
-            margin: 10px 0;
-            font-size: 16px;
-        }
+      label,
+      select,
+      input,
+      button {
+        display: block;
+        margin: 10px 0;
+        font-size: 16px;
+      }
 
-        select, input {
-            padding: 5px;
-            width: 200px;
-        }
+      select,
+      input {
+        padding: 5px;
+        width: 200px;
+      }
 
-        button {
-            padding: 10px 20px;
-            background-color: #007bff;
-            color: white;
-            border: none;
-            cursor: pointer;
-        }
+      button {
+        padding: 10px 20px;
+        background-color: #007bff;
+        color: white;
+        border: none;
+        cursor: pointer;
+      }
 
-        button:hover {
-            background-color: #0056b3;
-        }
+      button:hover {
+        background-color: #0056b3;
+      }
 
-        .results {
-            margin-top: 20px;
-        }
+      .results {
+        margin-top: 20px;
+      }
 
-        .error {
-            color: red;
-        }
+      .error {
+        color: red;
+      }
 
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 20px;
-        }
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 20px;
+      }
 
-        th, td {
-            border: 1px solid #ddd;
-            padding: 8px;
-            text-align: left;
-        }
+      th,
+      td {
+        border: 1px solid #ddd;
+        padding: 8px;
+        text-align: left;
+      }
 
-        th {
-            background-color: #f2f2f2;
-        }
+      th {
+        background-color: #f2f2f2;
+      }
     </style>
     <script>
-        function getStudentMarks() {
-            const usn = document.getElementById("usnInput").value;
-            const apiUrl = `/api/v1/student/${usn}`;
+      function getStudentMarks() {
+        const usn = document.getElementById("usnInput").value;
+        const apiUrl = `/api/v1/student/${usn}`;
 
-            fetch(apiUrl)
-                .then(response => response.json())
-                .then(data => {
-                    const resultsDiv = document.getElementById("results");
-                    resultsDiv.innerHTML = "<h3>Student Marks:</h3>";
+        fetch(apiUrl)
+          .then((response) => response.json())
+          .then((data) => {
+            const resultsDiv = document.getElementById("results");
+            resultsDiv.innerHTML = "<h3>Student Marks:</h3>";
+            console.log("API Response:", data);
 
-                    for (const [sem, marks] of Object.entries(data)) {
-                        resultsDiv.innerHTML += `<strong>Semester ${sem}:</strong>`;
-                        resultsDiv.innerHTML += createTableFromMarks(marks);
-                    }
-                })
-                .catch(error => {
-                    const resultsDiv = document.getElementById("results");
-                    resultsDiv.innerHTML = `<p class="error">Error: ${error.message}</p>`;
-                    console.error('Error making API request:', error);
-                });
-        }
-
-        function getSemMarks() {
-            const branchCode = document.getElementById("branchDropdown").value;
-            const sem = document.getElementById("semDropdown").value;
-            const apiUrl = `/api/v1/${branchCode}/${sem}`;
-
-            fetch(apiUrl)
-                .then(response => response.json())
-                .then(data => {
-                    const resultsDiv = document.getElementById("results");
-                    resultsDiv.innerHTML = "<h3>Semester Marks:</h3>";
-                    resultsDiv.innerHTML += createTableFromMarks(data);
-                })
-                .catch(error => {
-                    const resultsDiv = document.getElementById("results");
-                    resultsDiv.innerHTML = `<p class="error">Error: ${error.message}</p>`;
-                    console.error('Error making API request:', error);
-                });
-        }
-
-        function createTableFromMarks(marks) {
-            let table = '<table>';
-            table += '<tr>';
-
-            // Create table headers
-            for (const key in marks[0]) {
-                table += `<th>${key}</th>`;
+            if (typeof data[0] !== "object" || data === null) {
+              resultsDiv.innerHTML +=
+                '<p class="error">Invalid data format.</p>';
+              console.error("Invalid data format:", data);
+              return;
             }
-            table += '</tr>';
 
-            // Create table rows
-            marks.forEach(mark => {
-                table += '<tr>';
-                for (const value of Object.values(mark)) {
-                    table += `<td>${value}</td>`;
+            for (const [sem, marksData] of Object.entries(data[0])) {
+              console.log(`Semester ${sem} data:`, marksData, data[1]);
+
+              if (Array.isArray(marksData) && marksData.length === 1) {
+                const columns = data[1];
+                const rows = marksData;
+
+                console.log("Columns:", columns);
+                console.log("Rows:", rows);
+
+                resultsDiv.innerHTML += `<strong>Semester ${sem}:</strong>`;
+
+                const table = createTableFromData(columns, rows);
+                resultsDiv.appendChild(table);
+
+                if (table instanceof HTMLTableElement) {
+                  console.log("Table to be appended:", table);
+                  resultsDiv.appendChild(table);
+                } else {
+                  resultsDiv.innerHTML += `<p class="error">Failed to create table for Semester ${sem}.</p>`;
+                  console.error(
+                    `Failed to create table for Semester ${sem}:`,
+                    table
+                  );
                 }
-                table += '</tr>';
-            });
+              } else {
+                resultsDiv.innerHTML += `<p class="error">Invalid data format for Semester ${sem}</p>`;
+                console.error(
+                  `Invalid data format for Semester ${sem}:`,
+                  marksData
+                );
+              }
+            }
+          })
+          .catch((error) => {
+            const resultsDiv = document.getElementById("results");
+            resultsDiv.innerHTML = `<p class="error">Error: ${error.message}</p>`;
+            console.error("Error making API request:", error);
+          });
+      }
 
-            table += '</table>';
-            return table;
+      function createTableFromData(columns, data) {
+        if (!Array.isArray(columns) || !Array.isArray(data)) {
+          console.error("Invalid columns or data format");
+          return null;
         }
+
+        let table = document.createElement("table");
+        table.border = "1";
+
+        let thead = document.createElement("thead");
+        let headerRow = document.createElement("tr");
+        columns.forEach((colName) => {
+          let th = document.createElement("th");
+          th.textContent = colName;
+          headerRow.appendChild(th);
+        });
+        thead.appendChild(headerRow);
+        table.appendChild(thead);
+
+        let tbody = document.createElement("tbody");
+        data.forEach((row) => {
+          if (!Array.isArray(row)) {
+            console.error("Invalid row format:", row);
+            return;
+          }
+          let tr = document.createElement("tr");
+          row.forEach((cellData) => {
+            let td = document.createElement("td");
+            td.textContent = cellData;
+            tr.appendChild(td);
+          });
+          tbody.appendChild(tr);
+        });
+        table.appendChild(tbody);
+
+        console.log("Created Table:", table);
+
+        return table;
+      }
+
+      function getSemMarks() {
+        const branchCode = document.getElementById("branchDropdown").value;
+        const sem = document.getElementById("semDropdown").value;
+        const apiUrl = `/api/v1/${branchCode}/${sem}`;
+
+        fetch(apiUrl)
+          .then((response) => response.json())
+          .then((data) => {
+            const resultsDiv = document.getElementById("results");
+
+            resultsDiv.innerHTML = "<h3>Semester Marks:</h3>";
+
+            const table = createTableFromData(data[1], data[0]);
+
+            resultsDiv.appendChild(table);
+
+            console.log(data[1]);
+          })
+          .catch((error) => {
+            const resultsDiv = document.getElementById("results");
+            resultsDiv.innerHTML = `<p class="error">Error: ${error.message}</p>`;
+            console.error("Error making API request:", error);
+          });
+      }
     </script>
-</head>
-<body>
+  </head>
+  <body>
     <h1>Student Marks Retrieval</h1>
 
     <label for="usnInput">Enter USN:</label>
-    <input type="text" id="usnInput" placeholder="Enter USN">
+    <input type="text" id="usnInput" placeholder="Enter USN" />
     <button onclick="getStudentMarks()">Get Student Marks</button>
 
-    <hr>
+    <hr />
 
     <label for="branchDropdown">Select Branch:</label>
     <select id="branchDropdown">
-        <option value="BI23CD">CD</option>
-        <option value="BI23CS">CS</option>
-        <option value="BI23EC">EC</option>
-        <!-- Add more branches as needed -->
+      <option value="BI23CD">CD</option>
+      <option value="BI23CS">CS</option>
+      <option value="BI23EC">EC</option>
+      <!-- Add more branches as needed -->
     </select>
 
     <label for="semDropdown">Select Semester:</label>
     <select id="semDropdown">
-        <option value="1">1</option>
-        <option value="2">2</option>
-        <option value="3">3</option>
-        <option value="4">4</option>
-        <option value="5">5</option>
-        <option value="6">6</option>
-        <option value="7">7</option>
-        <option value="8">8</option>
+      <option value="1">1</option>
+      <option value="2">2</option>
+      <option value="3">3</option>
+      <option value="4">4</option>
+      <option value="5">5</option>
+      <option value="6">6</option>
+      <option value="7">7</option>
+      <option value="8">8</option>
     </select>
     <button onclick="getSemMarks()">Get Semester Marks</button>
 
     <div id="results" class="results"></div>
-</body>
+  </body>
 </html>
