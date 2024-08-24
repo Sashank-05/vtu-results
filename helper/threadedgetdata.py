@@ -1,14 +1,12 @@
 import os
 import random
-
+import threading
 import cv2 as cv
 import pytesseract
 import selenium.common.exceptions
 from selenium import webdriver
 from selenium.webdriver.chrome.service import Service
-
 from captcha import Captcha
-
 
 pytesseract.pytesseract.tesseract_cmd = r'C:\Program Files\Tesseract-OCR\tesseract'
 
@@ -58,7 +56,7 @@ class FillForm:
 
     def fill_form(self, usn):
         try:
-            self.driver.get("https://results.vtu.ac.in/DJcbcs24/index.php")
+            self.driver.get(self.base_url)
             self.driver.implicitly_wait(25)
             usnbox = self.driver.find_element("name", "lns")
             cap = self.driver.find_element("name", "captchacode")
@@ -108,6 +106,30 @@ class FillForm:
         print(f"Total failed attempts: {self.fail_count}")
 
 
+class ThreadManager:
+    def __init__(self, base_url, usn_prefix, ranges, db_table, num_threads):
+        self.base_url = base_url
+        self.usn_prefix = usn_prefix
+        self.ranges = ranges
+        self.db_table = db_table
+        self.num_threads = num_threads
+
+    def run_threads(self):
+        threads = []
+        for r in self.ranges:
+            start_range, end_range = r
+            fill_form_instance = FillForm(self.base_url, self.usn_prefix, start_range, end_range, self.db_table)
+            thread = threading.Thread(target=fill_form_instance.run)
+            threads.append(thread)
+
+        for thread in threads:
+            thread.start()
+
+        for thread in threads:
+            thread.join()
+
+
 if __name__ == "__main__":
-    form = FillForm("https://results.vtu.ac.in/DJcbcs24/index.php", "1BI23CD", 1, 56, "BI23CD_SEM_1")
-    form.run()
+    ranges = [(1, 20), (21, 40), (41, 56)]  # Adjust the ranges as needed
+    thread_manager = ThreadManager("https://results.vtu.ac.in/DJcbcs24/index.php", "1BI23CD", ranges, "BI23CD_SEM_1", 3)
+    thread_manager.run_threads()
