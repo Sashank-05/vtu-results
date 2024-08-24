@@ -3,3 +3,5 @@
 /.idea
 /pages/
 /csv_files/
+helper/__pycache__/
+captcha/__pycache__/

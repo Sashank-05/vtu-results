@@ -13,7 +13,7 @@ from helper import dbhandler, extract_table, processing, df_to_csv
 pytesseract.pytesseract.tesseract_cmd = r'C:\Program Files\Tesseract-OCR\tesseract'
 
 chrome_options = webdriver.ChromeOptions()
-#chrome_options.add_argument("--headless")
+# chrome_options.add_argument("--headless")
 chrome_options.add_argument("--no-sandbox")
 chrome_options.add_argument("--disable-dev-shm-usage")
 chrome_options.add_argument("--disable-gpu")
@@ -35,11 +35,12 @@ def handle_alert(usn):
     global fail_count, image
 
     alert = driver.switch_to.alert
-    if alert.text == "University Seat Number is not available or Invalid..!" or alert.text=="You have not applied for reval or reval results are awaited !!!":
+    if (
+            alert.text == "University Seat Number is not available or Invalid..!" or
+            alert.text == "You have not applied for reval or reval results are awaited !!!"
+    ):
         print("No results for: " + usn + "\n")
         alert.accept()
-    
-    
 
     elif alert.text == "Invalid captcha code !!!":
         print("Invalid CAPTCHA Detected for USN: " + usn + "\n")
@@ -53,9 +54,9 @@ def fill_form(usn):
     global text, cap, image
     print(usn)
     try:
-        #driver.get("https://results.vtu.ac.in/JJEcbcs24/index.php") sem 2 
-        #driver.get("https://results.vtu.ac.in/DJcbcs24/index.php") SEM1
-        driver.get("https://results.vtu.ac.in/DJRVcbcs24/index.php") #sem reval
+        # driver.get("https://results.vtu.ac.in/JJEcbcs24/index.php") sem 2
+        # driver.get("https://results.vtu.ac.in/DJcbcs24/index.php") SEM1
+        driver.get("https://results.vtu.ac.in/DJRVcbcs24/index.php")  # sem reval
 
         driver.implicitly_wait(25)
         usnbox = driver.find_element("name", "lns")
@@ -94,12 +95,12 @@ def fill_form(usn):
                 file.write(driver.page_source)
         else:
             print("Couldn't Save page for USN :", usn)
-            #fill_form(usn)
+            fill_form(usn)
             return
 
 
 def main():
-    for i in range(55,57):
+    for i in range(55, 56):
         usn = f"1BI23CD{i:03d}"
         fill_form(usn)
 
@@ -143,18 +144,12 @@ def save_to_db():
 
 def show_columns():
     table = dbhandler.DBHandler()
-    columns=table.get_columns('BI23CD_SEM_2')
+    columns = table.get_columns('BI23CD_SEM_2')
     print(columns)
-
-
-
 
 
 if __name__ == "__main__":
     main()
-    #check_pages()
-    #save_to_db()
-    #show_columns()
-
-
-
+    # check_pages()
+    # save_to_db()
+    # show_columns()
