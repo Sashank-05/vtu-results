@@ -8,7 +8,7 @@ import pytesseract
 class Captcha:
     def __init__(self, image: cv.imread):
         self.image = image
-        self.background = cv.imread('captcha/background_image_median.png')
+        self.background = cv.imread('background_image_median.png')
         self.ivtbackground = cv.bitwise_not(self.background)
 
     def solve_color(self):
