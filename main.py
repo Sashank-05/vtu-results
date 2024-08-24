@@ -12,8 +12,9 @@ from helper import dbhandler, extract_table, processing, df_to_csv
 
 pytesseract.pytesseract.tesseract_cmd = r'C:\Program Files\Tesseract-OCR\tesseract'
 
+# Selenium Chrome options
 chrome_options = webdriver.ChromeOptions()
-#chrome_options.add_argument("--headless")
+# chrome_options.add_argument("--headless")  # Uncomment this if you want to run headless
 chrome_options.add_argument("--no-sandbox")
 chrome_options.add_argument("--disable-dev-shm-usage")
 chrome_options.add_argument("--disable-gpu")
@@ -28,77 +29,75 @@ os.makedirs(invalid_captcha_dir, exist_ok=True)
 # Counter for failed CAPTCHA attempts
 fail_count = 0
 
-text, image, cap = None, None, None
-
 
 def handle_alert(usn):
-    global fail_count, image
+    global fail_count
+    try:
+        alert = driver.switch_to.alert
+        if alert.text == "University Seat Number is not available or Invalid..!":
+            print(f"No results for: {usn}\n")
+            alert.accept()
 
-    alert = driver.switch_to.alert
-    if alert.text == "University Seat Number is not available or Invalid..!":
-        print("No results for: " + usn + "\n")
-        alert.accept()
+        elif alert.text == "Invalid captcha code !!!":
+            print(f"Invalid CAPTCHA Detected for USN: {usn}\n")
+            alert.accept()
+            fail_count += 1
+            fill_form(usn)
 
-    elif alert.text == "Invalid captcha code !!!":
-        print("Invalid CAPTCHA Detected for USN: " + usn + "\n")
-        alert.accept()
-        fail_count += 1
-
-        fill_form(usn)
+    except selenium.common.exceptions.NoAlertPresentException:
+        pass
 
 
 def fill_form(usn):
-    global text, cap, image
-    print(usn)
+    global fail_count
     try:
-        #driver.get("https://results.vtu.ac.in/JJEcbcs24/index.php") sem 2 
         driver.get("https://results.vtu.ac.in/DJcbcs24/index.php")
         driver.implicitly_wait(25)
         usnbox = driver.find_element("name", "lns")
         cap = driver.find_element("name", "captchacode")
         usnbox.send_keys(usn)
-        capt = driver.find_element('xpath', '//img[@alt="CAPTCHA code"]').screenshot("current.png")
-        image = cv.imread("current.png")
-        # text = Captcha(image).solve_invert()
-        text = Captcha(image).solve_color()
-        # check if text 1 and text 2 are same
-        # if text1 == text2:
-        #    text = text1
-        # else:
-        #   text = text2
-        print(text)
-    except selenium.common.exceptions.UnexpectedAlertPresentException:
-        handle_alert(usn)
-        cv.imwrite(f"invalid_captchas/{usn}_{random.Random(2000)}.png", image)
+        driver.find_element('xpath', '//img[@alt="CAPTCHA code"]').screenshot("current.png")
 
-    try:
+        image = cv.imread("current.png")
+        text = Captcha(image).solve_color()
+        print(f"Detected CAPTCHA Text: {text}")
+
         cap.send_keys(text)
         driver.find_element('id', "submit").click()
-        try:
-            handle_alert(usn)
-        except selenium.common.exceptions.NoAlertPresentException:
-            pass
-        except:
-            raise
-    except Exception as e:
-        print(e)
-        fill_form(usn)
-        return
-    finally:
+
+        handle_alert(usn)
+
         if "Student Name" in driver.page_source:
-            with open("pages/" + str(usn) + ".html", "w", encoding="utf8") as file:
+            with open(f"pages/{usn}.html", "w", encoding="utf8") as file:
                 file.write(driver.page_source)
         else:
-            print("Couldn't Save page for USN :", usn)
+            print(f"Couldn't Save page for USN: {usn}")
+            fail_count += 1
             fill_form(usn)
-            return
+
+    except selenium.common.exceptions.UnexpectedAlertPresentException:
+        handle_alert(usn)
+        save_invalid_captcha(usn)
+        fill_form(usn)
+
+    except Exception as e:
+        print(f"Exception occurred: {e}")
+        save_invalid_captcha(usn)
+        fill_form(usn)
+
+
+def save_invalid_captcha(usn):
+    image = cv.imread("current.png")
+    file_name = f"{usn}_{random.randint(1000, 9999)}.png"
+    cv.imwrite(os.path.join(invalid_captcha_dir, file_name), image)
+    print(f"Saved invalid CAPTCHA image for USN: {usn}")
 
 
 def main():
-    for i in range(1,57):
+    global fail_count
+    for i in range(1, 57):
         usn = f"1BI23CD{i:03d}"
         fill_form(usn)
-
     print(f"Total failed attempts: {fail_count}")
 
 
@@ -106,14 +105,14 @@ def check_pages():
     cool = 0
     nah = 0
     whoisnah = []
-    for i in os.listdir("pages"):
-        if i.endswith(".html"):
-            with open("pages/" + i, "r", encoding="utf8") as file:
+    for filename in os.listdir("pages"):
+        if filename.endswith(".html"):
+            with open(f"pages/{filename}", "r", encoding="utf8") as file:
                 if "Student Name" in file.read():
                     cool += 1
                 else:
                     nah += 1
-                    whoisnah.append(i)
+                    whoisnah.append(filename)
 
     print(f"Cool attempts: {cool}")
     print(f"Nah attempts: {nah}")
@@ -122,16 +121,16 @@ def check_pages():
 
 def save_to_db():
     files = os.listdir("pages")
-    x,y= extract_table.extractor(fr"pages\{files[0]}")
-    df, _ =extract_table.cal(x,y)
+    x, y = extract_table.extractor(f"pages/{files[0]}")
+    df, _ = extract_table.cal(x, y)
     columns = processing.get_subject_code(df)
 
     table = dbhandler.DBHandler()
     table.create_table_columns('BI23CD_SEM_1', columns)
 
     for file in files:
-        x, y = extract_table.extractor(fr"pages\{file}")
-        df_new,other=extract_table.cal(x,y)
+        x, y = extract_table.extractor(f"pages/{file}")
+        df_new, other = extract_table.cal(x, y)
         df_to_csv.convert(df_new, other)
         inte, ext, lis = processing.df_to_sql(df_new, other)
         table.push_data_into_table('BI23CD_SEM_1', inte, ext, lis)
@@ -141,17 +140,12 @@ def save_to_db():
 
 def show_columns():
     table = dbhandler.DBHandler()
-    columns=table.get_columns('BI23CD_SEM_2')
+    columns = table.get_columns('BI23CD_SEM_2')
     print(columns)
 
 
-
-
-
 if __name__ == "__main__":
-    main()
-    #check_pages()
-    #save_to_db()
-    #show_columns()
-
-
+    # main()
+    check_pages()
+    # save_to_db()
+    # show_columns()
