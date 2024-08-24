@@ -100,7 +100,7 @@ def fill_form(usn):
 
 
 def main():
-    for i in range(55, 56):
+    for i in range(1, 56):
         usn = f"1BI23CD{i:03d}"
         fill_form(usn)
 

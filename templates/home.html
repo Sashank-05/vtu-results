@@ -83,10 +83,10 @@
             }
 
             for (const [sem, marksData] of Object.entries(data[0])) {
-              console.log(`Semester ${sem} data:`, marksData, data[1]);
+              console.log(`Semester ${sem} data:`, marksData);
 
               if (Array.isArray(marksData) && marksData.length === 1) {
-                const columns = data[1][0];
+                const columns = data[1][sem - 1];
                 const rows = marksData;
 
                 console.log("Columns:", columns);

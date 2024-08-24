@@ -54,7 +54,7 @@ def get_sem_marks(id, sem):
     """
     try:
         sem_marks = db.get_semester_marks(id, sem)
-        columns = db.get_columns("BI23CD_SEM_2")
+        columns = db.get_columns(f"BI23CD_SEM_{sem}")
 
         return jsonify(sem_marks, columns)
     except Exception as e:
