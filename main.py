@@ -122,14 +122,16 @@ def check_pages():
 
 def save_to_db():
     files = os.listdir("pages")
-    df, _ = extract_table.extractor(fr"pages\{files[0]}")
+    x,y= extract_table.extractor(fr"pages\{files[0]}")
+    df, _ =extract_table.cal(x,y)
     columns = processing.get_subject_code(df)
 
     table = dbhandler.DBHandler()
     table.create_table_columns('BI23CD_SEM_1', columns)
 
     for file in files:
-        df_new, other = extract_table.extractor(fr"pages\{file}")
+        x, y = extract_table.extractor(fr"pages\{file}")
+        df_new,other=extract_table.cal(x,y)
         df_to_csv.convert(df_new, other)
         inte, ext, lis = processing.df_to_sql(df_new, other)
         table.push_data_into_table('BI23CD_SEM_1', inte, ext, lis)
@@ -147,9 +149,9 @@ def show_columns():
 
 
 if __name__ == "__main__":
-    #main()
+    main()
     #check_pages()
-    save_to_db()
+    #save_to_db()
     #show_columns()
 
 

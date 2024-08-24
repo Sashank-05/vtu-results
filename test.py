@@ -1,0 +1,53 @@
+from helper import dbhandler,extract_table
+import pandas as pd
+
+table=dbhandler.DBHandler()
+
+marks=table.get_student_marks("BI23CD",1,"1BI23CD055")
+column=table.get_columns("BI23CD_SEM_1")
+
+new_column=[]
+
+for i in column[2:20]:
+    if "_" in i:
+        new_column.append(i.removesuffix("_internal").removesuffix("_external"))
+    else:
+        new_column.append(i)
+
+new_column=list(dict.fromkeys(new_column[0:16]))
+
+internal_marks=[]
+external_marks=[]
+total_marks=[]
+result=[]
+
+for i in range(2,len(marks[0])-3):
+    if i%2==0:
+        internal_marks.append(marks[0][i])
+    else:
+        external_marks.append(marks[0][i])
+               
+for i,j in zip(internal_marks,external_marks):
+    total_marks.append(int(i)+int(j))
+    if int(i)>=20 and int(j)>=20 :
+        result.append("P")
+    else:
+        result.append("F")
+
+
+#print(new_column,internal_marks,external_marks,total_marks,marks[0][18],marks[0][19])
+
+
+column_names=["Subject Code","internal marks","external marks","Total","Result"]
+
+df = pd.DataFrame(list(zip(new_column,internal_marks,external_marks,total_marks,result)), columns=column_names)
+print(df)
+print(extract_table.cal(df,[]))
+
+
+    
+
+
+
+
+

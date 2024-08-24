@@ -25,12 +25,18 @@ def extractor(saved_html):
     df_marks = pd.DataFrame(table_data[1:9], columns=table_data[0])
     df_marks = df_marks.drop('Announced / Updated on', axis=1)
 
-    sub_status = list(df_marks["Result"])
-    grade = []
-    total_credits = 0
     details = []
     details.append(tables[0][1][0].strip(":"))
     details.append(tables[0][1][1].strip(":"))
+
+    return(df_marks,details)
+
+
+def cal(df_marks,details):
+    sub_status = list(df_marks["Result"])
+    grade = []
+    total_credits = 0
+    
 
     if "F" not in sub_status:
         for i in list(df_marks["Total"]):
@@ -48,8 +54,11 @@ def extractor(saved_html):
                 grade.append(5)
 
         # print(grade)
+        try:
+            df_marks.insert(6, "Grade Points", grade)
+        except:
+            df_marks["Grade Points"]=grade
 
-        df_marks.insert(6, "Grade Points", grade)
 
         credit_obtained = []
         for i, j in zip(list(df_marks["Grade Points"]), list(df_marks["Subject Code"])):
@@ -68,8 +77,10 @@ def extractor(saved_html):
             else:
                 credit_obtained.append(0)
         
-
-        df_marks.insert(7, "Credits Obtained", credit_obtained)
+        try:
+            df_marks.insert(7, "Credits Obtained", credit_obtained)
+        except:
+            df_marks["Credits Obtained"]=credit_obtained
         print(df_marks)
         details.append(sum([int(x) for x in list(df_marks["Total"])]))
         total_credits_obtained = sum([int(x) for x in list(df_marks["Credits Obtained"])])
