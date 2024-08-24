@@ -86,7 +86,7 @@
               console.log(`Semester ${sem} data:`, marksData, data[1]);
 
               if (Array.isArray(marksData) && marksData.length === 1) {
-                const columns = data[1];
+                const columns = data[1][0];
                 const rows = marksData;
 
                 console.log("Columns:", columns);

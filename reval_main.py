@@ -62,7 +62,7 @@ def fill_form(usn):
         usnbox = driver.find_element("name", "lns")
         cap = driver.find_element("name", "captchacode")
         usnbox.send_keys(usn)
-        capt = driver.find_element('xpath', '//img[@alt="CAPTCHA code"]').screenshot("current.png")
+        driver.find_element('xpath', '//img[@alt="CAPTCHA code"]').screenshot("current.png")
         image = cv.imread("current.png")
         # text = Captcha(image).solve_invert()
         text = Captcha(image).solve_color()
