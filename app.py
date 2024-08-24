@@ -1,6 +1,6 @@
 from flask import Flask, render_template, jsonify
 
-from helper import dbhandler
+from helper import dbhandler,test
 
 app = Flask(__name__)
 
@@ -15,15 +15,14 @@ apiv1 = '/api/v1/'
 def home():
     return render_template("home.html")
 
-
-@app.route(apiv1 + 'student/<string:usn>', methods=['GET'])
+"""@app.route(apiv1 + 'student/<string:usn>', methods=['GET'])
 def get_student(usn):
-    """
+    
     apiv1/student/1BI23CD001
 
     Get's the student's marks card from 1st to 8th semester
 
-    """
+    
     try:
         student_marks = dict()
         cols = []
@@ -40,8 +39,22 @@ def get_student(usn):
         return jsonify(student_marks, cols), 200
 
     except Exception as e:
-        return jsonify({'error': str(e)}), 500
+        return jsonify({'error': str(e)}), 500"""
 
+
+@app.route(apiv1 + 'student/<string:usn>', methods=['GET'])
+def get_student(usn):
+    try:
+        table=[]
+        data=[]
+        for i in range(1,9):
+            x,y=test.neat_marks(i,usn)
+            table.append(x)
+            data.append(y)
+    except:
+        pass 
+    return jsonify(table, data)
+ 
 
 @app.route(apiv1 + '<string:id>/<string:sem>', methods=['GET'])
 def get_sem_marks(id, sem):

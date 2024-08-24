@@ -8,7 +8,7 @@ from selenium import webdriver
 from selenium.webdriver.chrome.service import Service
 
 from captcha import Captcha
-from helper import dbhandler, extract_table, processing, df_to_csv
+from helper import dbhandler, extract_table, processing, df_to_csv, test
 
 pytesseract.pytesseract.tesseract_cmd = r'C:\Program Files\Tesseract-OCR\tesseract'
 
@@ -145,7 +145,9 @@ def show_columns():
 
 
 if __name__ == "__main__":
+    test.neat_marks(2,"1bi23cd055")
+
     # main()
-    check_pages()
+    #check_pages()
     # save_to_db()
     # show_columns()
