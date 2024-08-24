@@ -51,7 +51,8 @@ def fill_form(usn):
     global text, cap, image
     print(usn)
     try:
-        driver.get("https://results.vtu.ac.in/JJEcbcs24/index.php")
+        #driver.get("https://results.vtu.ac.in/JJEcbcs24/index.php") sem 2 
+        driver.get("https://results.vtu.ac.in/DJcbcs24/index.php")
         driver.implicitly_wait(25)
         usnbox = driver.find_element("name", "lns")
         cap = driver.find_element("name", "captchacode")
@@ -125,13 +126,13 @@ def save_to_db():
     columns = processing.get_subject_code(df)
 
     table = dbhandler.DBHandler()
-    table.create_table_columns('BI23CD_SEM_2', columns)
+    table.create_table_columns('BI23CD_SEM_1', columns)
 
     for file in files:
         df_new, other = extract_table.extractor(fr"pages\{file}")
         df_to_csv.convert(df_new, other)
         inte, ext, lis = processing.df_to_sql(df_new, other)
-        table.push_data_into_table('BI23CD_SEM_2', inte, ext, lis)
+        table.push_data_into_table('BI23CD_SEM_1', inte, ext, lis)
 
     table.close()
 
@@ -148,7 +149,7 @@ def show_columns():
 if __name__ == "__main__":
     #main()
     #check_pages()
-    #save_to_db()
-    show_columns()
+    save_to_db()
+    #show_columns()
 
 

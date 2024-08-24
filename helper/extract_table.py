@@ -91,3 +91,6 @@ def extractor(saved_html):
     return df_marks, details
 
     # list return usn ,name,total,gpa,res
+
+
+    
