@@ -150,4 +150,4 @@ if __name__ == "__main__":
     # main()
     #check_pages()
     # save_to_db()
-    # show_columns()
+    show_columns()
