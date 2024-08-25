@@ -64,65 +64,6 @@
       }
     </style>
     <script>
-      /*function getStudentMarks() {
-              const usn = document.getElementById("usnInput").value;
-              const apiUrl = `/api/v1/student/${usn}`;
-
-              fetch(apiUrl)
-                .then((response) => response.json())
-                .then((data) => {
-                  const resultsDiv = document.getElementById("results");
-                  resultsDiv.innerHTML = "<h3>Student Marks:</h3>";
-                  console.log("API Response:", data);
-
-                  if (typeof data[0] !== "object" || data === null) {
-                    resultsDiv.innerHTML +=
-                      '<p class="error">Invalid data format.</p>';
-                    console.error("Invalid data format:", data);
-                    return;
-                  }
-
-                  for (const [sem, marksData] of Object.entries(data[0])) {
-                    console.log(`Semester ${sem} data:`, marksData);
-
-                    if (Array.isArray(marksData) && marksData.length === 1) {
-                      const columns = data[1][sem - 1];
-                      const rows = marksData;
-
-                      console.log("Columns:", columns);
-                      console.log("Rows:", rows);
-
-                      resultsDiv.innerHTML += `<strong>Semester ${sem}:</strong>`;
-
-                      const table = createTableFromData(columns, rows);
-                      resultsDiv.appendChild(table);
-
-                      if (table instanceof HTMLTableElement) {
-                        console.log("Table to be appended:", table);
-                        resultsDiv.appendChild(table);
-                      } else {
-                        resultsDiv.innerHTML += `<p class="error">Failed to create table for Semester ${sem}.</p>`;
-                        console.error(
-                          `Failed to create table for Semester ${sem}:`,
-                          table
-                        );
-                      }
-                    } else {
-                      resultsDiv.innerHTML += `<p class="error">Invalid data format for Semester ${sem}</p>`;
-                      console.error(
-                        `Invalid data format for Semester ${sem}:`,
-                        marksData
-                      );
-                    }
-                  }
-                })
-                .catch((error) => {
-                  const resultsDiv = document.getElementById("results");
-                  resultsDiv.innerHTML = `<p class="error">Error: ${error.message}</p>`;
-                  console.error("Error making API request:", error);
-                });
-            }*/
-
       function createTableFromData(columns, data) {
         if (!Array.isArray(columns) || !Array.isArray(data)) {
           console.error("Invalid columns or data format");

@@ -6,3 +6,4 @@
 helper/__pycache__/
 captcha/__pycache__/
 invalid_captchas/
+/helper/invalid_captchas/

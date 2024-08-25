@@ -37,7 +37,7 @@ class FillForm:
         os.makedirs(self.invalid_captcha_dir, exist_ok=True)
 
         # Prepare directory for saving HTML pages
-        self.pages_dir = "pages"
+        self.pages_dir = "../pages"
         os.makedirs(self.pages_dir, exist_ok=True)
 
     def handle_alert(self, usn):
@@ -77,7 +77,7 @@ class FillForm:
             self.driver.implicitly_wait(25)
 
             if "Student Name" in self.driver.page_source:
-                with open(f"pages/{usn}.html", "w", encoding="utf8") as file:
+                with open(f"../pages/{usn}.html", "w", encoding="utf8") as file:
                     file.write(self.driver.page_source)
             else:
                 print(f"Couldn't Save page for USN: {usn}")

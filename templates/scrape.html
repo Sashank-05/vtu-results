@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Scrape Student Data</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f5f5f5;
+            padding: 20px;
+        }
+
+        label,
+        input,
+        button {
+            display: block;
+            margin: 10px 0;
+            font-size: 16px;
+        }
+
+        input {
+            padding: 5px;
+            width: 300px;
+        }
+
+        button {
+            padding: 10px 20px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+
+        .results {
+            margin-top: 20px;
+        }
+
+        .error {
+            color: red;
+        }
+    </style>
+    <script>
+        function startScraping() {
+            const usnPrefix = document.getElementById("usnPrefix").value;
+            const customUrl = document.getElementById("customUrl").value;
+            const sem = document.getElementById("sem").value;
+            const endUsn = document.getElementById("endUsn").value;
+            const numThreads = document.getElementById("numThreads").value;
+
+            const payload = {
+                usn_prefix: usnPrefix,
+                custom_url: customUrl,
+                sem: sem,
+                end_usn: endUsn,
+                num_threads: numThreads || 4 // Default to 4 threads if not provided
+            };
+
+            fetch("/api/v1/scrape", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify(payload)
+            })
+            .then(response => response.json())
+            .then(data => {
+                const resultsDiv = document.getElementById("results");
+                if (data.success) {
+                    resultsDiv.innerHTML = "<p>Scraping started successfully.</p>";
+                } else {
+                    resultsDiv.innerHTML = `<p class="error">Error: ${data.error}</p>`;
+                }
+            })
+            .catch(error => {
+                const resultsDiv = document.getElementById("results");
+                resultsDiv.innerHTML = `<p class="error">Error: ${error.message}</p>`;
+                console.error("Error starting scraping:", error);
+            });
+        }
+    </script>
+</head>
+<body>
+    <h1>Scrape Student Data</h1>
+
+    <label for="usnPrefix">USN Prefix:</label>
+    <input type="text" id="usnPrefix" placeholder="Enter USN Prefix (e.g., 1BI23CD)" />
+
+    <label for="customUrl">Custom URL:</label>
+    <input type="text" id="customUrl" placeholder="Enter the custom URL for scraping" />
+
+    <label for="sem">Semester:</label>
+    <input type="text" id="sem" placeholder="Enter the semester number (e.g., 1)" />
+
+    <label for="endUsn">End USN:</label>
+    <input type="text" id="endUsn" placeholder="Enter the last USN number (e.g., 56)" />
+
+    <label for="numThreads">Number of Threads:</label>
+    <input type="text" id="numThreads" placeholder="Enter the number of threads (default is 4)" />
+
+    <button onclick="startScraping()">Start Scraping</button>
+
+    <div id="results" class="results"></div>
+</body>
+</html>

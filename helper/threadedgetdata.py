@@ -1,11 +1,13 @@
 import os
 import random
 import threading
+
 import cv2 as cv
 import pytesseract
 import selenium.common.exceptions
 from selenium import webdriver
 from selenium.webdriver.chrome.service import Service
+
 from captcha import Captcha
 
 pytesseract.pytesseract.tesseract_cmd = r'C:\Program Files\Tesseract-OCR\tesseract'
@@ -20,9 +22,11 @@ class FillForm:
         self.db_table = db_table
         self.fail_count = 0
 
+        print(f"Starting thread for USN range: {self.start_range} to {self.end_range} (-_-\")")
+
         # Selenium Chrome options
         chrome_options = webdriver.ChromeOptions()
-        # chrome_options.add_argument("--headless")
+        chrome_options.add_argument("--headless")
         chrome_options.add_argument("--no-sandbox")
         chrome_options.add_argument("--disable-dev-shm-usage")
         chrome_options.add_argument("--disable-gpu")
@@ -35,7 +39,7 @@ class FillForm:
         os.makedirs(self.invalid_captcha_dir, exist_ok=True)
 
         # Prepare directory for saving HTML pages
-        self.pages_dir = "pages"
+        self.pages_dir = "../pages"
         os.makedirs(self.pages_dir, exist_ok=True)
 
     def handle_alert(self, usn):
@@ -75,7 +79,7 @@ class FillForm:
             self.driver.implicitly_wait(25)
 
             if "Student Name" in self.driver.page_source:
-                with open(f"pages/{usn}.html", "w", encoding="utf8") as file:
+                with open(f"../pages/{usn}.html", "w", encoding="utf8") as file:
                     file.write(self.driver.page_source)
             else:
                 print(f"Couldn't Save page for USN: {usn}")
@@ -107,12 +111,19 @@ class FillForm:
 
 
 class ThreadManager:
-    def __init__(self, base_url, usn_prefix, ranges, db_table, num_threads):
+    def __init__(self, base_url, usn_prefix, db_table, end_usn=None, ranges=None, num_threads=4):
         self.base_url = base_url
         self.usn_prefix = usn_prefix
         self.ranges = ranges
         self.db_table = db_table
         self.num_threads = num_threads
+        self.end_usn = int(end_usn)
+
+        if end_usn is None and ranges is None:
+            raise ValueError("Either end_usn or ranges must be provided")
+
+        if ranges is None:
+            self.ranges = self.div_usns()
 
     def run_threads(self):
         threads = []
@@ -128,8 +139,30 @@ class ThreadManager:
         for thread in threads:
             thread.join()
 
+    def div_usns(self):
+        # divide into ranges
+        total_usns = self.end_usn
+        num_threads = self.num_threads
+        base_range_size = total_usns // num_threads
+        remainder = total_usns % num_threads
+
+        current_start = 1
+        ranges = []
+
+        for i in range(num_threads):
+            range_size = base_range_size + (1 if i < remainder else 0)
+            current_end = current_start + range_size - 1
+            ranges.append((current_start, current_end))
+            current_start = current_end + 1
+        return ranges
+
 
 if __name__ == "__main__":
-    ranges = [(1, 20), (21, 40), (41, 56)]  # Adjust the ranges as needed
-    thread_manager = ThreadManager("https://results.vtu.ac.in/DJcbcs24/index.php", "1BI23CD", ranges, "BI23CD_SEM_1", 3)
+    # 1 to 56 divided into 5 ranges
+    start_usn = 1
+    end_usn = 56
+    num_threads = 10
+
+    thread_manager = ThreadManager("https://results.vtu.ac.in/DJcbcs24/index.php", "1BI23CD", "BI23CD_SEM_1", 56,
+                                   num_threads=5)
     thread_manager.run_threads()
