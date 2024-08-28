@@ -7,7 +7,7 @@ import pytesseract
 import selenium.common.exceptions
 from selenium import webdriver
 from selenium.webdriver.chrome.service import Service
-
+from helper import extract_table, df_to_csv, processing, dbhandler
 from captcha import Captcha
 
 pytesseract.pytesseract.tesseract_cmd = r'C:\Program Files\Tesseract-OCR\tesseract'
@@ -39,7 +39,7 @@ class FillForm:
         os.makedirs(self.invalid_captcha_dir, exist_ok=True)
 
         # Prepare directory for saving HTML pages
-        self.pages_dir = "../pages"
+        self.pages_dir = "pages"
         os.makedirs(self.pages_dir, exist_ok=True)
 
     def handle_alert(self, usn):
@@ -79,7 +79,7 @@ class FillForm:
             self.driver.implicitly_wait(25)
 
             if "Student Name" in self.driver.page_source:
-                with open(f"../pages/{usn}.html", "w", encoding="utf8") as file:
+                with open(f"pages/{usn}.html", "w", encoding="utf8") as file:
                     file.write(self.driver.page_source)
             else:
                 print(f"Couldn't Save page for USN: {usn}")
@@ -108,6 +108,8 @@ class FillForm:
             self.fill_form(usn)
 
         print(f"Total failed attempts: {self.fail_count}")
+    
+    
 
 
 class ThreadManager:
@@ -138,13 +140,17 @@ class ThreadManager:
 
         for thread in threads:
             thread.join()
+        
+        self.save_to_db()
+        
+
 
     def div_usns(self):
         # divide into ranges
-        total_usns = self.end_usn
-        num_threads = self.num_threads
-        base_range_size = total_usns // num_threads
-        remainder = total_usns % num_threads
+        total_usns = int(self.end_usn)
+        num_threads = int(self.num_threads)
+        base_range_size = int(total_usns // num_threads)
+        remainder = int(total_usns % num_threads)
 
         current_start = 1
         ranges = []
@@ -155,6 +161,28 @@ class ThreadManager:
             ranges.append((current_start, current_end))
             current_start = current_end + 1
         return ranges
+    
+    def save_to_db(self):
+        files = os.listdir("pages")
+        print(files)
+        x, y = extract_table.extractor(f"pages/{files[0]}")
+        df, _ = extract_table.cal(x, y)
+        columns = processing.get_subject_code(df)
+
+        table = dbhandler.DBHandler()
+        try:
+            table.create_table_columns(self.db_table, columns)
+        except:
+            print("Table already created")
+            
+        for file in files:
+            x, y = extract_table.extractor(f"pages/{file}")
+            df_new, other = extract_table.cal(x, y)
+            df_to_csv.convert(df_new, other)
+            inte, ext, lis = processing.df_to_sql(df_new, other)
+            table.push_data_into_table(self.db_table, inte, ext, lis)
+
+        table.close()
 
 
 if __name__ == "__main__":
@@ -164,5 +192,5 @@ if __name__ == "__main__":
     num_threads = 10
 
     thread_manager = ThreadManager("https://results.vtu.ac.in/DJcbcs24/index.php", "1BI23CD", "BI23CD_SEM_1", 56,
-                                   num_threads=5)
+                                   num_threads=10)
     thread_manager.run_threads()

@@ -100,6 +100,8 @@ def scrape_student():
     try:
         handler = threadedgetdata.ThreadManager(custom_url, usn_prefix, f"{usn_prefix[1::]}_SEM_{sem}", end_usn, num_threads=num_threads)
         handler.run_threads()
+
+        
         return jsonify({'success': True}), 200
     except Exception as e:
         return jsonify({'success': False, 'error': str(e)}), 500
