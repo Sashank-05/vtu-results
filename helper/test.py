@@ -5,8 +5,9 @@ from helper import dbhandler, extract_table
 
 def neat_marks(sem: int, usn: str, batch=23):
     table = dbhandler.DBHandler()
-
-    marks = table.get_student_marks(f"BI{batch}CD", sem, usn)
+    table_name = usn[1:5]
+    branch = usn[5:7]
+    marks = table.get_student_marks(f"{table_name}{branch}", sem, usn)
     column = table.get_columns(f"BI{batch}CD_SEM_{sem}")
 
     new_column = []

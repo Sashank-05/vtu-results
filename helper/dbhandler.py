@@ -91,3 +91,4 @@ class DBHandler:
         if self.connection:
             self.cursor.close()
             self.connection.close()
+

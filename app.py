@@ -42,6 +42,13 @@ def get_student(usn):
     except Exception as e:
         return jsonify({'error': str(e)}), 500"""
 
+@app.route(apiv1 + "export/<string:type>")
+def export(type):
+    if type == "excel":
+        # return a file to download
+        
+    else:
+        return jsonify({"error": "Type not Found"})
 
 @app.route(apiv1 + 'student/<string:usn>', methods=['GET'])
 def get_student(usn):
