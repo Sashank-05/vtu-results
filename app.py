@@ -35,15 +35,17 @@ def export(type):
 
 @app.route(apiv1 + 'student/<string:usn>', methods=['GET'])
 def get_student(usn):
-    table = []
-    data = []
+    
     try:
+        table = []
+        data = []
         for i in range(1, 9):
             x, y = test.neat_marks(i, usn)
             table.append(x)
             data.append(y)
     except:
-        pass
+        table.append("<h2> no data </h2>")
+        data+=[["NAN","NAN"]]
     return jsonify(table, data)
 
 

@@ -145,9 +145,9 @@ def show_columns():
 
 
 if __name__ == "__main__":
-    test.neat_marks(2,"1bi23cd055")
+    test.neat_marks(2,"1cr23cd055")
 
-    main()
-    check_pages()
+    #main()
+    #check_pages()
     #save_to_db()
     #show_columns()

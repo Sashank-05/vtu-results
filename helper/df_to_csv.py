@@ -1,6 +1,16 @@
+import os
 def convert(df, lis):
-    df["Total Marks"] = lis[2]
-    df["GPA"] = lis[3]
+    emp=["","","","","","",""]
+    c1=emp.insert(0,lis[2])
+    c2=emp.insert(0,lis[3])
+    df["Total Marks"] = c1
+    df["GPA"] = c2
     print(df)
 
-    df.to_csv(fr'csv_files\{lis[0]}.csv')
+
+    directory = 'csv_files'
+    file_path = os.path.join(directory, f'{lis[0]}.csv')
+    os.makedirs(directory, exist_ok=True)
+
+    df.to_csv(file_path, index=False)
+

@@ -7,8 +7,13 @@ def neat_marks(sem: int, usn: str, batch=23):
     table = dbhandler.DBHandler()
     table_name = usn[1:5]
     branch = usn[5:7]
-    marks = table.get_student_marks(f"{table_name}{branch}", sem, usn)
-    column = table.get_columns(f"BI{batch}CD_SEM_{sem}")
+    try:
+        marks = table.get_student_marks(f"{table_name}{branch}", sem, usn)
+        column = table.get_columns(f"BI{batch}CD_SEM_{sem}")
+    except:
+        print("here")
+        return 0
+
 
     new_column = []
 
@@ -46,8 +51,11 @@ def neat_marks(sem: int, usn: str, batch=23):
     # print(df)
     df, extras = extract_table.cal(df, [])
     html_table = df.to_html(index=False)
-
-    return html_table, extras
+    if html_table: 
+        print("lol")
+        return html_table, extras
+    
+        
 
 
 if __name__ == "__main__":

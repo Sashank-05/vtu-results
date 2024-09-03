@@ -169,27 +169,27 @@ class ThreadManager:
         return ranges
 
 
-def save_to_db(self):
-    files = os.listdir("pages")
-    print(files)
-    x, y = extract_table.extractor(f"pages/{files[0]}")
-    df, _ = extract_table.cal(x, y)
-    columns = processing.get_subject_code(df)
+    def save_to_db(self):
+        files = os.listdir("pages")
+        print(files)
+        x, y = extract_table.extractor(f"pages/{files[0]}")
+        df, _ = extract_table.cal(x, y)
+        columns = processing.get_subject_code(df)
 
-    table = dbhandler.DBHandler()
-    try:
-        table.create_table_columns(self.db_table, columns)
-    except:
-        print("Table already created")
+        table = dbhandler.DBHandler()
+        try:
+            table.create_table_columns(self.db_table, columns)
+        except:
+            print("Table already created")
 
-    for file in files:
-        x, y = extract_table.extractor(f"pages/{file}")
-        df_new, other = extract_table.cal(x, y)
-        df_to_csv.convert(df_new, other)
-        inte, ext, lis = processing.df_to_sql(df_new, other)
-        table.push_data_into_table(self.db_table, inte, ext, lis)
+        for file in files:
+            x, y = extract_table.extractor(f"pages/{file}")
+            df_new, other = extract_table.cal(x, y)
+            df_to_csv.convert(df_new, other)
+            inte, ext, lis = processing.df_to_sql(df_new, other)
+            table.push_data_into_table(self.db_table, inte, ext, lis)
 
-    table.close()
+        table.close()
 
 
 if __name__ == "__main__":
