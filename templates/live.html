@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Live Scraping Progress</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
+    <style>
+        .usn-box {
+            width: 100px;
+            height: 100px;
+            display: inline-block;
+            margin: 5px;
+            text-align: center;
+            line-height: 100px;
+            color: white;
+            font-weight: bold;
+        }
+
+        .fetched {
+            background-color: green;
+        }
+
+        .not-fetched {
+            background-color: red;
+        }
+    </style>
+</head>
+<body>
+<h1>Live Scraping Progress</h1>
+<div id="usn-container"></div>
+
+<script>
+    var socket = io.connect('http://' + document.domain + ':' + location.port);
+
+    var list = [];
+
+    socket.on('connect', function () {
+        console.log('Connected to server');
+    });
+
+    socket.on('update', function (data) {
+        if (data.usn !== undefined && !list.includes(data.usn)) {
+            list.push(data.usn);
+            var usnContainer = document.getElementById('usn-container');
+            var usnBox = document.createElement('div');
+            usnBox.className = 'usn-box fetched';
+            usnBox.textContent = data.usn;
+            usnContainer.appendChild(usnBox);
+        }
+    });
+
+    socket.on('disconnect', function () {
+        console.log('Disconnected from server');
+    });
+</script>
+</body>
+</html>
