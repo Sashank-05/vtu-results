@@ -64,6 +64,7 @@ class DBHandler:
     @reset_cursor
     def get_semester_marks(self, id, sem):
         sql = "SELECT * FROM {id}_SEM_{sem}"
+        print(sql.format(id=id, sem=sem))
         self.cursor.execute(sql.format(id=id, sem=sem))
         result = self.cursor.fetchall()
         return result

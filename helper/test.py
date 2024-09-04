@@ -38,7 +38,7 @@ def neat_marks(sem: int, usn: str, batch=23):
 
     for i, j in zip(internal_marks, external_marks):
         total_marks.append(int(i) + int(j))
-        if int(i) >= 20 and int(j) >= 20:
+        if int(i) >= 20 and int(j) >= 18 and int(i+j) >= 40:
             result.append("P")
         else:
             result.append("F")
