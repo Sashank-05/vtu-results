@@ -5,8 +5,8 @@ import selenium.common.exceptions
 from selenium import webdriver
 from selenium.webdriver.chrome.service import Service
 from helpers.captcha import Captcha
-from helper import extract_table, processing, df_to_csv
-from helpers import dbhandler
+from helper import processing, df_to_csv
+from helpers import dbhandler, extract_table
 
 # Configuration for pytesseract and Chrome WebDriver
 pytesseract.pytesseract.tesseract_cmd = r'C:\Program Files\Tesseract-OCR\tesseract'

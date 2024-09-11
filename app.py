@@ -1,14 +1,12 @@
-import flask
 import logging
-import threading
 import logging
 import threading
 
 from flask import Flask, render_template, jsonify, redirect, url_for, request
 from flask_socketio import SocketIO
 
-from helper import test, threadedgetdata
 from helpers import dbhandler
+from helpers import fetchdata
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -87,11 +85,10 @@ def scrape_student():
         return jsonify({'success': False, 'error': 'Please provide valid data'}), 400
 
     try:
-        handler = threadedgetdata.ThreadManager(
+        handler = fetchdata.ThreadManager(
             custom_url, usn_prefix, f"{usn_prefix[1:]}_SEM_{sem}", end_usn,
             num_threads=num_threads, socketio=socketio
         )
-
 
         threading.Thread(target=handler.run_threads).start()
 
