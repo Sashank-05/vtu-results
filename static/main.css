@@ -1,0 +1,89 @@
+body {
+    font-family: 'Noto Sans', sans-serif;
+    background-color: #f5f5f5;
+    color: #202124;
+}
+
+.container {
+    background-color: #fff;
+    border-radius: 8px;
+    box-shadow: 0 1px 3px rgba(60, 64, 67, 0.3), 0 4px 8px rgba(60, 64, 67, 0.15);
+    padding: 20px;
+    margin-top: 20px;
+}
+
+h1 {
+    font-size: 2.5rem;
+    font-weight: 400;
+    color: #202124;
+}
+
+.form-label {
+    font-weight: 500;
+    color: #5f6368;
+}
+
+.form-control, .form-select {
+    border-radius: 4px;
+    border: 1px solid #dadce0;
+    padding: 10px;
+    font-size: 16px;
+    color: #202124;
+}
+
+.btn-primary {
+    background-color: #1a73e8;
+    border-color: #1a73e8;
+    color: #fff;
+    font-weight: 500;
+}
+
+.btn-primary:hover {
+    background-color: #185abc;
+    border-color: #185abc;
+}
+
+.results {
+    display: block;
+    padding-left: 1%;
+    padding-right: 1%;
+}
+
+.results table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 20px 0;
+    font-size: 18px;
+    text-align: left;
+    box-shadow: 0 2px 3px rgba(0, 0, 0, 0.1);
+}
+
+.results thead tr {
+    background-color: #f5f5f5;
+    border-bottom: 2px solid #ddd;
+}
+
+.results th, .results td {
+    padding: 12px 15px;
+}
+
+.results tbody tr {
+    border-bottom: 1px solid #ddd;
+}
+
+.results tbody tr:nth-of-type(even) {
+    background-color: #f9f9f9;
+}
+
+.results tbody tr:last-of-type {
+    border-bottom: 2px solid #009879;
+}
+
+.results tbody tr:hover {
+    background-color: #f1f1f1;
+}
+
+.download_button {
+    display: inline-block;
+    margin-top: 20px;
+}

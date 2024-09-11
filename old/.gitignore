@@ -1,0 +1,9 @@
+/pages
+/.venv
+/.idea
+/pages/
+/csv_files/
+helper/__pycache__/
+captcha/__pycache__/
+invalid_captchas/
+/helper/invalid_captchas/
