@@ -1,11 +1,11 @@
 import os
+
 import openpyxl
 
 if os.getcwd().endswith('helpers'):
     import dbhandler
 else:
     from helpers import dbhandler
-
 
 
 class export:
@@ -56,6 +56,8 @@ class export:
 
             idx += 1
         wb.save(self.table_name + '.xlsx')
+
+
 
 
 if __name__ == '__main__':

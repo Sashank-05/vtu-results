@@ -58,5 +58,38 @@ def neat_marks(sem: int, usn: str, batch=23):
         return 0
 
 
+def dataframe_to_sql(df: pd.DataFrame, additional_data: list) -> tuple:
+    df = df.drop(columns=["Subject Name", "Grade Points", "Credits Obtained", "Result"], errors='ignore')
+    internal_marks = list(df["Internal Marks"])
+    external_marks = list(df["External Marks"])
+    total_marks = list(df["Total"])
+    other_data = additional_data
+
+    return internal_marks, external_marks, other_data
+
+
+def df_to_csv(self, df, data):
+    emp = ["", "", "", "", "", "", ""]
+    emp.insert(0, data[2])
+    emp.insert(0, data[3])
+    df["Total Marks"] = emp[0]
+    df["GPA"] = emp[1]
+    directory = 'csv_files'
+    file_path = os.path.join(directory, f'{data[0]}.csv')
+    os.makedirs(directory, exist_ok=True)
+    df.to_csv(file_path, index=False)
+
+
+def get_subject_code(df):
+    subjects = []
+
+    for i in list(df["Subject Code"]):
+        subjects.append(i + "_internal")
+        subjects.append(i + "_external")
+    subjects += ["Total", "GPA", "Result"]
+
+    return subjects
+
+
 if __name__ == "__main__":
     logging.info(neat_marks(2, "1bi23cd055"))
