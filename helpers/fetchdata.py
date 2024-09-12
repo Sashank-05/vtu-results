@@ -213,12 +213,11 @@ class ThreadManager:
             current_start = current_end + 1
 
         return ranges
-
     def save_to_db(self):
         paths= os.path.join(base,"pages/")
         print(paths)
-        print(os.listdir(paths))
-        x, y = extractor()
+        files=os.listdir(paths)
+        x, y = extractor(os.path.join(paths,files[0]))
         print()
         df, _ = cal(x, y)
         columns = get_subject_code(df)
@@ -230,9 +229,9 @@ class ThreadManager:
             print("Table already created")
 
         for file in files:
-            x, y = extractor(f"pages/{file}")
+            x, y = extractor(os.path.join(paths,file))
             df_new, other = cal(x, y)
-            df_to_csv.convert(df_new, other)
+            #df_to_csv(df_new, other)
             inte, ext, lis = dataframe_to_sql(df_new, other)
             table.push_data_into_table(self.db_table, inte, ext, lis)
             os.remove('pages/'+file)
@@ -244,7 +243,7 @@ class ThreadManager:
 
 if __name__ == "__main__":
     #thread_manager = ThreadManager("https://results.vtu.ac.in/DJcbcs24/index.php", "1BI23CD",
-       #                            "BI23ec_SEM_1", 50, num_threads=5)
+        #                           "BI23ec_SEM_1", 50, num_threads=5)
     #thread_manager.run_threads()
     #print(f"Total global failed attempts: {global_fails}")
     ThreadManager.save_to_db("self")
