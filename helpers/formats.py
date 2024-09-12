@@ -9,7 +9,7 @@ else:
     from helpers import dbhandler, extract_table
 
 # Configure logging
-logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(module)s - %(message)s')
 
 
 def neat_marks(sem: int, usn: str, batch=23):

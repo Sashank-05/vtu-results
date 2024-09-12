@@ -21,7 +21,7 @@ else:
 pytesseract.pytesseract.tesseract_cmd = r'C:\Program Files\Tesseract-OCR\tesseract'
 
 # Configure logging
-logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(module)s - %(message)s')
 
 history = {}
 global_fails = 0
@@ -182,6 +182,7 @@ class ThreadManager:
 
         try:
             self.socketio.emit('update', {'usn': 'done'}, namespace='/')
+            print(f"Total global failed attempts: {global_fails}")
         except AttributeError:
             pass
 

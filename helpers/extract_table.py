@@ -1,11 +1,15 @@
+import json
+import logging
+import os
 from io import StringIO
+
 import pandas as pd
 from bs4 import BeautifulSoup
 
-credit_4 = ["BMATS101", "BPHYS102","BMATS201","BCHES202","BPHYS202"]
-credit_3 = ["BPOPS103","BPOPS203", "BESCK104B", "BETCK105H","BCEDK203","BPLCK205B","BESCK204C", "BETCK205H","BESCK204D"]
-credit_2 = []
-credit_1 = ["BENGK106", "BKSKK107","BKSKK207", "BIDTK158","BIDTK258", "BKBKK107","BKBKK207","BPWSK206","BICOK207","BSFHK258"]
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(module)s - %(message)s')
+
+with open(os.path.join(os.path.dirname(__file__), '../static/data.json'), 'r') as file:
+    subject_data = json.load(file)
 
 
 def extractor(saved_html):
@@ -25,18 +29,17 @@ def extractor(saved_html):
     df_marks = pd.DataFrame(table_data[1:9], columns=table_data[0])
     df_marks = df_marks.drop('Announced / Updated on', axis=1)
 
-    details = []
+    details: list = list()
     details.append(tables[0][1][0].strip(":"))
     details.append(tables[0][1][1].strip(":"))
 
-    return(df_marks,details)
+    return df_marks, details
 
 
-def cal(df_marks,details):
+def cal(df_marks, details):
     sub_status = list(df_marks["Result"])
-    grade = []
+    grade: list = []
     total_credits = 0
-    
 
     if "F" not in sub_status:
         for i in list(df_marks["Total"]):
@@ -53,35 +56,23 @@ def cal(df_marks,details):
             elif int(i) >= 40:
                 grade.append(5)
 
-        # print(grade)
         try:
             df_marks.insert(6, "Grade Points", grade)
         except:
-            df_marks["Grade Points"]=grade
+            df_marks["Grade Points"] = grade
 
-
-        credit_obtained = []
+        credit_obtained: list = []
         for i, j in zip(list(df_marks["Grade Points"]), list(df_marks["Subject Code"])):
-            if j in credit_4:
-                credit_obtained.append(4 * i)
-                total_credits += 4 * 1
-            elif j.strip() in credit_3:
-                credit_obtained.append(3 * i)
-                total_credits += 3 * 1
-            elif j in credit_2:
-                credit_obtained.append(2 * i)
-                total_credits += 2 * 1
-            elif j in credit_1:
-                credit_obtained.append(1 * i)
-                total_credits += 1 * 1
-            else:
-                credit_obtained.append(0)
-        
+            credits = subject_data.get(j.strip(), {}).get("Credits", 0)
+            credit_obtained.append(credits * i)
+            total_credits += credits
+
         try:
             df_marks.insert(7, "Credits Obtained", credit_obtained)
         except:
-            df_marks["Credits Obtained"]=credit_obtained
-        print(df_marks)
+            df_marks["Credits Obtained"] = credit_obtained
+
+        logging.info(df_marks)
         details.append(sum([int(x) for x in list(df_marks["Total"])]))
         total_credits_obtained = sum([int(x) for x in list(df_marks["Credits Obtained"])])
 
@@ -92,16 +83,10 @@ def cal(df_marks,details):
         try:
             details.append(sum([int(x) for x in list(df_marks["Total"])]))
         except:
-             details.append(" ")
+            details.append(" ")
 
         details.append("NAN")
         count = sub_status.count("F")
         details.append(f"{count} Fail")
-    
 
     return df_marks, details
-
-    # list return usn ,name,total,gpa,res
-
-
-    
