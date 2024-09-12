@@ -11,10 +11,16 @@ from selenium.webdriver.chrome.service import Service
 
 if os.getcwd().endswith("helpers"):
     from captcha import Captcha
+    from extract_table import extractor,cal
+    from formats import dataframe_to_sql,df_to_csv,get_subject_code
+    import dbhandler
 
     base = "../tempwork/"
 else:
     from helpers.captcha import Captcha
+    from extract_table import extractor,cal
+    from formats import dataframe_to_sql,df_to_csv,get_subject_code
+    import dbhandler
 
     base = "tempwork/"
 
@@ -51,7 +57,9 @@ class FillForm:
 
         # Prepare directory for saving HTML pages
         self.pages_dir = "pages"
+        self.current_dir="current"
         os.makedirs(base + self.pages_dir, exist_ok=True)
+        os.makedirs(base + self.current_dir, exist_ok=True)
 
     def handle_alert(self, usn):
         try:
@@ -183,6 +191,7 @@ class ThreadManager:
         try:
             self.socketio.emit('update', {'usn': 'done'}, namespace='/')
             print(f"Total global failed attempts: {global_fails}")
+            self.save_to_db()
         except AttributeError:
             pass
 
@@ -205,9 +214,37 @@ class ThreadManager:
 
         return ranges
 
+    def save_to_db(self):
+        paths= os.path.join(base,"pages/")
+        print(paths)
+        print(os.listdir(paths))
+        x, y = extractor()
+        print()
+        df, _ = cal(x, y)
+        columns = get_subject_code(df)
+        # vtu-results\tempwork\pages
+        table = dbhandler.DBHandler()
+        try:
+            table.create_table_columns(self.db_table, columns)
+        except:
+            print("Table already created")
+
+        for file in files:
+            x, y = extractor(f"pages/{file}")
+            df_new, other = cal(x, y)
+            df_to_csv.convert(df_new, other)
+            inte, ext, lis = dataframe_to_sql(df_new, other)
+            table.push_data_into_table(self.db_table, inte, ext, lis)
+            os.remove('pages/'+file)
+
+        table.close()
+
+
+
 
 if __name__ == "__main__":
-    thread_manager = ThreadManager("https://results.vtu.ac.in/DJcbcs24/index.php", "1BI23CS",
-                                   "BI23CS_SEM_1", 50, num_threads=5)
-    thread_manager.run_threads()
-    print(f"Total global failed attempts: {global_fails}")
+    #thread_manager = ThreadManager("https://results.vtu.ac.in/DJcbcs24/index.php", "1BI23CD",
+       #                            "BI23ec_SEM_1", 50, num_threads=5)
+    #thread_manager.run_threads()
+    #print(f"Total global failed attempts: {global_fails}")
+    ThreadManager.save_to_db("self")
