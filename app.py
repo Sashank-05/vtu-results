@@ -5,7 +5,7 @@ import threading
 from flask import Flask, render_template, jsonify, redirect, url_for, request
 from flask_socketio import SocketIO
 
-from helpers import dbhandler
+from helpers import dbhandler,formats
 from helpers import fetchdata
 
 # Configure logging
@@ -45,7 +45,7 @@ def get_student(usn):
     data = []
     try:
         for i in range(1, 9):
-            x, y = test.neat_marks(i, usn)
+            x, y = formats.neat_marks(i, usn)
             table.append(x)
             data.append(y)
     except:
