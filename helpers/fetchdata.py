@@ -18,9 +18,9 @@ if os.getcwd().endswith("helpers"):
     base = "../tempwork/"
 else:
     from helpers.captcha import Captcha
-    from extract_table import extractor,cal
-    from formats import dataframe_to_sql,df_to_csv,get_subject_code
-    import dbhandler
+    from helpers.extract_table import extractor,cal
+    from helpers.formats import dataframe_to_sql,df_to_csv,get_subject_code
+    from helpers import dbhandler
 
     base = "tempwork/"
 
