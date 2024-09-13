@@ -213,12 +213,14 @@ class ThreadManager:
             current_start = current_end + 1
 
         return ranges
+    
     def save_to_db(self):
+
         paths= os.path.join(base,"pages/")
         print(paths)
         files=os.listdir(paths)
         x, y = extractor(os.path.join(paths,files[0]))
-        print()
+        #print()
         df, _ = cal(x, y)
         columns = get_subject_code(df)
         # vtu-results\tempwork\pages
@@ -234,7 +236,7 @@ class ThreadManager:
             #df_to_csv(df_new, other)
             inte, ext, lis = dataframe_to_sql(df_new, other)
             table.push_data_into_table(self.db_table, inte, ext, lis)
-            os.remove('pages/'+file)
+            os.remove(os.path.join(paths,file))
 
         table.close()
 
@@ -242,8 +244,8 @@ class ThreadManager:
 
 
 if __name__ == "__main__":
-    #thread_manager = ThreadManager("https://results.vtu.ac.in/DJcbcs24/index.php", "1BI23CD",
-        #                           "BI23ec_SEM_1", 50, num_threads=5)
-    #thread_manager.run_threads()
-    #print(f"Total global failed attempts: {global_fails}")
-    ThreadManager.save_to_db("self")
+    thread_manager = ThreadManager("https://results.vtu.ac.in/DJcbcs24/index.php", "1BI23CD",
+                                "BI23ec_SEM_1",8, num_threads=8)
+    thread_manager.run_threads()
+    print(f"Total global failed attempts: {global_fails}")
+    thread_manager.save_to_db()
