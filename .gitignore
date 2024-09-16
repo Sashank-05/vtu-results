@@ -1,0 +1,10 @@
+/old/pages
+/.venv
+/.idea
+/pages/
+/csv_files/
+helpers/__pycache__/
+helpers/captcha/__pycache__/
+/helpers/invalid_captchas/
+tempwork/pages
+/tempwork/pages

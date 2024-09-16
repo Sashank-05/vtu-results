@@ -9,7 +9,8 @@ from helpers import dbhandler,formats
 from helpers import fetchdata
 
 # Configure logging
-logging.basicConfig(level=logging.INFO)
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(module)s - %(message)s - '
+                                               '[%(filename)s:%(lineno)d in %(funcName)s]')
 
 app = Flask(__name__)
 app.logger.setLevel(logging.INFO)
@@ -45,10 +46,13 @@ def get_student(usn):
     data = []
     try:
         for i in range(1, 9):
+            print(i)
             x, y = formats.neat_marks(i, usn)
             table.append(x)
             data.append(y)
-    except:
+    except Exception as e:
+        # log with traceback
+        logging.error(f"Error fetching student data: {e}", exc_info=True)
         table.append("<h2> no data </h2>")
         data += [["NAN", "NAN"]]
     return jsonify(table, data)
@@ -86,20 +90,20 @@ def scrape_student():
 
     try:
         handler = fetchdata.ThreadManager(
-            custom_url, usn_prefix, f"{usn_prefix[1:]}_SEM_{sem}", end_usn,
-            num_threads=num_threads, socketio=socketio
+            custom_url, usn_prefix, f"{usn_prefix[1:]}_SEM_{sem}", end_usn=end_usn,
+            num_threads=int(num_threads), socketio=socketio
         )
 
         threading.Thread(target=handler.run_threads).start()
-        threading.save_to_db()
+        # threading.save_to_db()
 
         return jsonify({'success': True}), 200
 
     except ValueError as ve:
-        app.logger.error(f"ValueError: {ve}")
+        app.logger.error(f"ValueError: {ve}", exc_info=True)
         return jsonify({'success': False, 'error': str(ve)}), 400
     except Exception as e:
-        app.logger.error(f"Exception: {e}")
+        app.logger.error(f"Exception: {e}", exc_info=True)
         return jsonify({'success': False, 'error': 'An unexpected error occurred'}), 500
 
 

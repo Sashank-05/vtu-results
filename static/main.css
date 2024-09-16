@@ -1,89 +1,61 @@
 body {
     font-family: 'Noto Sans', sans-serif;
-    background-color: #f5f5f5;
-    color: #202124;
+    background-color: #dbfcf7;
 }
 
 .container {
-    background-color: #fff;
-    border-radius: 8px;
-    box-shadow: 0 1px 3px rgba(60, 64, 67, 0.3), 0 4px 8px rgba(60, 64, 67, 0.15);
+    background-color: white;
     padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
     margin-top: 20px;
 }
 
 h1 {
-    font-size: 2.5rem;
-    font-weight: 400;
-    color: #202124;
-}
-
-.form-label {
-    font-weight: 500;
-    color: #5f6368;
-}
-
-.form-control, .form-select {
-    border-radius: 4px;
-    border: 1px solid #dadce0;
-    padding: 10px;
-    font-size: 16px;
-    color: #202124;
-}
-
-.btn-primary {
-    background-color: #1a73e8;
-    border-color: #1a73e8;
-    color: #fff;
-    font-weight: 500;
-}
-
-.btn-primary:hover {
-    background-color: #185abc;
-    border-color: #185abc;
+    color: #5779c2;
 }
 
 .results {
-    display: block;
-    padding-left: 1%;
-    padding-right: 1%;
+    margin-top: 20px;
+    overflow-x: auto;
+    max-width: 100%;
 }
 
 .results table {
     width: 100%;
+    max-width: 100%;
+    table-layout: auto;
     border-collapse: collapse;
-    margin: 20px 0;
-    font-size: 18px;
-    text-align: left;
-    box-shadow: 0 2px 3px rgba(0, 0, 0, 0.1);
-}
-
-.results thead tr {
-    background-color: #f5f5f5;
-    border-bottom: 2px solid #ddd;
 }
 
 .results th, .results td {
-    padding: 12px 15px;
+    word-wrap: break-word;
+    white-space: normal;
+    padding: 8px;
+    border: 1px solid #ddd;
 }
 
-.results tbody tr {
-    border-bottom: 1px solid #ddd;
+.results th {
+    background-color: #c4d0e7;
 }
 
-.results tbody tr:nth-of-type(even) {
-    background-color: #f9f9f9;
+.hoverable {
+    cursor: pointer;
+    transition: background-color 0.3s;
 }
 
-.results tbody tr:last-of-type {
-    border-bottom: 2px solid #009879;
+.hoverable:hover {
+    background-color: #f0f0f0;
 }
 
-.results tbody tr:hover {
-    background-color: #f1f1f1;
-}
-
-.download_button {
-    display: inline-block;
-    margin-top: 20px;
+.tooltip {
+    position: absolute;
+    background: #333;
+    color: #fff;
+    padding: 5px;
+    border-radius: 4px;
+    font-size: 12px;
+    display: none; /* Hidden by default */
+    z-index: 1000;
+    pointer-events: none; /* Avoid interfering with mouse events */
 }
