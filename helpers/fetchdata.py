@@ -1,6 +1,5 @@
 import logging
 import os
-import random
 import threading
 
 import cv2 as cv
@@ -31,6 +30,32 @@ logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(
 
 history = {}
 global_fails = 0
+
+
+def save_to_db(db_table):
+    paths = os.path.join(base, "pages/")
+    print(paths)
+    files = os.listdir(paths)
+    x, y = extractor(os.path.join(paths, files[0]))
+    # print()
+    df, _ = cal(x, y)
+    columns = get_subject_code(df)
+    # vtu-results\tempwork\pages
+    table = dbhandler.DBHandler()
+    try:
+        table.create_table_columns(db_table, columns)
+    except:
+        print("Table already created")
+
+    for file in files:
+        x, y = extractor(os.path.join(paths, file))
+        df_new, other = cal(x, y)
+        # df_to_csv(df_new, other)
+        inte, ext, lis = dataframe_to_sql(df_new, other)
+        table.push_data_into_table(db_table, inte, ext, lis)
+        os.remove(os.path.join(paths, file))
+
+    table.close()
 
 
 class FillForm:
@@ -285,6 +310,32 @@ class newThreadManager:
         newFillForm(self.base_url, usn, self.db_table, self.drivers[thread_index], thread_index,
                     self.socketio).fill_form()
         self.busy[thread_index] = False
+
+    def save_to_db(self):
+
+        paths = os.path.join(base, "pages/")
+        print(paths)
+        files = os.listdir(paths)
+        x, y = extractor(os.path.join(paths, files[0]))
+        # print()
+        df, _ = cal(x, y)
+        columns = get_subject_code(df)
+        # vtu-results\tempwork\pages
+        table = dbhandler.DBHandler()
+        try:
+            table.create_table_columns(self.db_table, columns)
+        except:
+            print("Table already created")
+
+        for file in files:
+            x, y = extractor(os.path.join(paths, file))
+            df_new, other = cal(x, y)
+            # df_to_csv(df_new, other)
+            inte, ext, lis = dataframe_to_sql(df_new, other)
+            table.push_data_into_table(self.db_table, inte, ext, lis)
+            os.remove(os.path.join(paths, file))
+
+        table.close()
 
 
 class newFillForm:

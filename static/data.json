@@ -1,40 +1,95 @@
 {
-    "BMATS101":{
-        "Name":"Mathematics for engineering",
-        "Credits":4
-    },
-    "BPHYS102":{
-        "Name":"Physics for engineering",
-        "Credits":4
-    },
-    "BPOPS103":{
-        "Name":"Principles of programing using C",
-        "Credits":3
-    },
-    "BESCK104B":{
-        "Name":"Introduction to Electrical Engineering",
-        "Credits":3
-    },
-    "BETCK105H":{
-        "Name":" Introduction to Internet of Things (IOT)",
-        "Credits":3
-    },
-    "BENGK106":{
-        "Name":"Communicative English",
-        "Credits":1
-    },
-    "BKSKK107":{
-        "Name":"Samskrutika Kannada",
-        "Credits":1
-    },
-    "BIDTK158":{
-        "Name":"Invation and Design Thinking",
-        "Credits":1
-    },
-    "BKBKK107":{
-        "Name":"Balake Kannada",
-        "Credits":1
-    }
-
-    
+  "BMATS101": {
+    "Name": "Mathematics for engineering",
+    "Credits": 4
+  },
+  "BPHYS102": {
+    "Name": "Physics for engineering",
+    "Credits": 4
+  },
+  "BPOPS103": {
+    "Name": "Principles of programing using C",
+    "Credits": 3
+  },
+  "BESCK104B": {
+    "Name": "Introduction to Electrical Engineering",
+    "Credits": 3
+  },
+  "BETCK105H": {
+    "Name": " Introduction to Internet of Things (IOT)",
+    "Credits": 3
+  },
+  "BENGK106": {
+    "Name": "Communicative English",
+    "Credits": 1
+  },
+  "BKSKK107": {
+    "Name": "Samskrutika Kannada",
+    "Credits": 1
+  },
+  "BIDTK158": {
+    "Name": "Invation and Design Thinking",
+    "Credits": 1
+  },
+  "BKBKK107": {
+    "Name": "Balake Kannada",
+    "Credits": 1
+  },
+  "BCS301": {
+    "Credits": 4
+  },
+  "BCS302": {
+    "Credits": 4
+  },
+  "BCS303": {
+    "Credits": 4
+  },
+  "BCS304": {
+    "Credits": 3
+  },
+  "BCSL305": {
+    "Credits": 1
+  },
+  "BCSK307": {
+    "Credits": 1
+  },
+  "BPEK359": {
+    "Credits": 0
+  },
+  "BCS358A": {
+    "Credits": 1
+  },
+  "BCS401": {
+    "Credits": 4
+  },
+  "BCS402": {
+    "Credits": 4
+  },
+  "BCS403": {
+    "Credits": 4
+  },
+  "BCSL404": {
+    "Credits": 1
+  },
+  "BBOC407": {
+    "Credits": 1
+  },
+  "BUHK408": {
+    "Credits": 1
+  },
+  "BCS405A": {
+    "Credits": 1
+  },
+  "BDSL456C": {
+    "Credits": 1
+  },
+  "BNSK459": {
+    "Credits": 1
+  },
+  "BYOK459": {
+    "Credits": 1
+  },
+  "BPEK459": {
+    "Credits": 1
+  }
 }
