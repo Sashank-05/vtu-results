@@ -1,5 +1,6 @@
 import logging
 import os
+import sqlite3
 import threading
 
 import cv2 as cv
@@ -34,10 +35,12 @@ global_fails = 0
 
 def save_to_db(db_table):
     paths = os.path.join(base, "pages/")
-    print(paths)
     files = os.listdir(paths)
+    # check if the page starts with db table name's prefix
+    files = [file for file in files if db_table.split("_")[0] in file]
+    files.remove("1BI22CD008.html")
     x, y = extractor(os.path.join(paths, files[0]))
-    # print()
+    print(files)
     df, _ = cal(x, y)
     columns = get_subject_code(df)
     # vtu-results\tempwork\pages
@@ -51,9 +54,13 @@ def save_to_db(db_table):
         x, y = extractor(os.path.join(paths, file))
         df_new, other = cal(x, y)
         # df_to_csv(df_new, other)
-        inte, ext, lis = dataframe_to_sql(df_new, other)
-        table.push_data_into_table(db_table, inte, ext, lis)
-        os.remove(os.path.join(paths, file))
+        try:
+            inte, ext, lis = dataframe_to_sql(df_new, other)
+            table.push_data_into_table(db_table, inte, ext, lis)
+        except sqlite3.OperationalError:
+            logging.error(f"Skipping USN {file[:-5]} due to error", exc_info=True)
+            pass
+        # os.remove(os.path.join(paths, file))
 
     table.close()
 
@@ -237,12 +244,13 @@ class ThreadManager:
         return ranges
 
     def save_to_db(self):
-
         paths = os.path.join(base, "pages/")
-        print(paths)
         files = os.listdir(paths)
+        # check if the page starts with db table name's prefix
+        files = [file for file in files if self.db_table.split("_")[0] in file]
+        files.remove("1BI22CD008.html")
         x, y = extractor(os.path.join(paths, files[0]))
-        # print()
+        print(files)
         df, _ = cal(x, y)
         columns = get_subject_code(df)
         # vtu-results\tempwork\pages
@@ -256,8 +264,12 @@ class ThreadManager:
             x, y = extractor(os.path.join(paths, file))
             df_new, other = cal(x, y)
             # df_to_csv(df_new, other)
-            inte, ext, lis = dataframe_to_sql(df_new, other)
-            table.push_data_into_table(self.db_table, inte, ext, lis)
+            try:
+                inte, ext, lis = dataframe_to_sql(df_new, other)
+                table.push_data_into_table(self.db_table, inte, ext, lis)
+            except sqlite3.OperationalError:
+                logging.error(f"Skipping USN {file[:-5]} due to error", exc_info=True)
+                pass
             os.remove(os.path.join(paths, file))
 
         table.close()

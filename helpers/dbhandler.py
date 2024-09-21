@@ -46,23 +46,26 @@ class DBHandler:
 
     @reset_cursor
     def push_data_into_table(self, table_name: str, inte: list, ext: list, other: list):
-        sql = (f"INSERT INTO {table_name} VALUES (\n"
-               f"            ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ? \n"
-               f"        )")
-        values = (other[0].strip(), other[1].strip(), inte[0], ext[0], inte[1], ext[1],
-                  inte[2], ext[2], inte[3], ext[3], inte[4], ext[4],
-                  inte[5], ext[5], inte[6], ext[6], inte[7], ext[7],
-                  other[2], other[3], other[4])
+        try:
+            placeholders = ', '.join(['?'] * (len(inte) + len(ext) + len(other)))
+            sql = f"INSERT INTO {table_name} VALUES ({placeholders})"
+            values = [other[0].strip(), other[1].strip()] + inte + ext + other[2:]
+            print(values)
+            self.cursor.execute(sql, values)
 
-        self.cursor.execute(sql, values)
+        except Exception as e:
+            pass
         self.connection.commit()
 
     @reset_cursor
     def get_student_marks(self, id, sem, usn):
-        sql = "SELECT * FROM {id}_SEM_{sem} WHERE USN LIKE ?"
-        self.cursor.execute(sql.format(id=id, sem=sem), (usn,))
-        result = self.cursor.fetchall()
-        return result
+        try:
+            sql = f"SELECT * FROM {id}_SEM_{sem} WHERE USN LIKE ?"
+            self.cursor.execute(sql, (usn,))
+            result = self.cursor.fetchall()
+            return result
+        except sqlite3.OperationalError as e:
+            pass
 
     @reset_cursor
     def get_semester_marks(self, id, sem):

@@ -95,7 +95,7 @@ def scrape_student():
         )
 
         threading.Thread(target=handler.run_threads).start()
-        fetchdata.save_to_db()
+        # fetchdata.save_to_db(f"{usn_prefix[1:]}_SEM_{sem}")
 
         return jsonify({'success': True}), 200
 
