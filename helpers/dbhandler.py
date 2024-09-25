@@ -54,7 +54,7 @@ class DBHandler:
                 marks.append(i)
                 marks.append(j)
             values = [other[0].strip(), other[1].strip()] +marks + other[2:]
-            print(values)
+            #print(values)
             self.cursor.execute(sql, values)
 
         except Exception as e:

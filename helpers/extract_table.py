@@ -26,8 +26,10 @@ def extractor(saved_html):
         row_data = [cell.text.strip() for cell in cells]
         table_data.append(row_data)
     print()
-    df_marks = pd.DataFrame(table_data[1:9], columns=table_data[0])
+    df_marks = pd.DataFrame(table_data[1:], columns=table_data[0])
+    df_marks = df_marks.iloc[:-1 , :]
     df_marks = df_marks.drop('Announced / Updated on', axis=1)
+    print(df_marks)
 
     details: list = list()
     details.append(tables[0][1][0].strip(":"))
@@ -90,5 +92,5 @@ def cal(df_marks, details):
         count = sub_status.count("F")
         details.append(f"{count} Fail")
 
-    print("\n \n \n \n ",df_marks,"\n \n \n \n next one")
+    #print("\n \n \n \n ",df_marks,"\n \n \n \n next one")
     return df_marks, details
