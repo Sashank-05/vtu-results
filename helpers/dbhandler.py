@@ -49,7 +49,11 @@ class DBHandler:
         try:
             placeholders = ', '.join(['?'] * (len(inte) + len(ext) + len(other)))
             sql = f"INSERT INTO {table_name} VALUES ({placeholders})"
-            values = [other[0].strip(), other[1].strip()] + inte + ext + other[2:]
+            marks=[]
+            for i,j in zip(inte,ext):
+                marks.append(i)
+                marks.append(j)
+            values = [other[0].strip(), other[1].strip()] +marks + other[2:]
             print(values)
             self.cursor.execute(sql, values)
 

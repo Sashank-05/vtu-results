@@ -25,7 +25,7 @@ def extractor(saved_html):
         cells = row.find_all("div", class_="divTableCell")
         row_data = [cell.text.strip() for cell in cells]
         table_data.append(row_data)
-
+    print()
     df_marks = pd.DataFrame(table_data[1:9], columns=table_data[0])
     df_marks = df_marks.drop('Announced / Updated on', axis=1)
 
@@ -72,7 +72,8 @@ def cal(df_marks, details):
         except:
             df_marks["Credits Obtained"] = credit_obtained
 
-        logging.info(df_marks)
+        #logging.info(df_marks)
+        print(df_marks)
         details.append(sum([int(x) for x in list(df_marks["Total"])]))
         total_credits_obtained = sum([int(x) for x in list(df_marks["Credits Obtained"])])
 
@@ -89,4 +90,5 @@ def cal(df_marks, details):
         count = sub_status.count("F")
         details.append(f"{count} Fail")
 
+    print("\n \n \n \n ",df_marks,"\n \n \n \n next one")
     return df_marks, details

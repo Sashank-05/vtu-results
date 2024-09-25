@@ -248,7 +248,11 @@ class ThreadManager:
         files = os.listdir(paths)
         # check if the page starts with db table name's prefix
         files = [file for file in files if self.db_table.split("_")[0] in file]
-        files.remove("1BI22CD008.html")
+        try:
+            files.remove("1BI22CD008.html")
+        except:
+            pass
+        
         x, y = extractor(os.path.join(paths, files[0]))
         print(files)
         df, _ = cal(x, y)
@@ -270,7 +274,7 @@ class ThreadManager:
             except sqlite3.OperationalError:
                 logging.error(f"Skipping USN {file[:-5]} due to error", exc_info=True)
                 pass
-            os.remove(os.path.join(paths, file))
+            #os.remove(os.path.join(paths, file))
 
         table.close()
 
