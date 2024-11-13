@@ -47,9 +47,13 @@ def get_student(usn):
     try:
         for i in range(1, 9):
             print(i)
-            x, y = formats.neat_marks(i, usn)
-            table.append(x)
-            data.append(y)
+            try:
+                x, y = formats.neat_marks(i, usn)
+                table.append(x)
+                data.append(y)
+            except:
+                    pass
+            
     except Exception as e:
         # log with traceback
         logging.error(f"Error fetching student data: {e}", exc_info=True)

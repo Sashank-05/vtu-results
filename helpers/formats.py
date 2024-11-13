@@ -55,7 +55,7 @@ def neat_marks(sem: int, usn: str, batch=23):
         return html_table, extras
     else:
         logging.error("Failed to generate HTML table.")
-        return 0
+        return [0],[0]
 
 
 def dataframe_to_sql(df: pd.DataFrame, additional_data: list) -> tuple:
