@@ -452,8 +452,8 @@ class newFillForm:
 
 
 if __name__ == "__main__":
-    thread_manager = ThreadManager("https://results.vtu.ac.in/DJcbcs24/index.php", "1BI23CD",
+    thread_manager = ThreadManager("https://results.vtu.ac.in/DJcbcs24/index.php", "1BI22CD",
                                    "BI23ec_SEM_1", 8, num_threads=8)
     thread_manager.run_threads()
     print(f"Total global failed attempts: {global_fails}")
-    thread_manager.save_to_db()
+    #thread_manager.save_to_db()

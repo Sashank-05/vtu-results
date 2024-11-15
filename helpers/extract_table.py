@@ -2,6 +2,7 @@ import json
 import logging
 import os
 from io import StringIO
+import pprint
 
 import pandas as pd
 from bs4 import BeautifulSoup
@@ -12,30 +13,49 @@ with open(os.path.join(os.path.dirname(__file__), '../static/data.json'), 'r') a
     subject_data = json.load(file)
 
 
+import pandas as pd
+from bs4 import BeautifulSoup
+from io import StringIO
+
 def extractor(saved_html):
     with open(saved_html, "r", encoding="utf-8") as file:
         soup = BeautifulSoup(file, "lxml")
 
-    rows = soup.find_all("div", class_="divTableRow")
     html_string = str(soup)
     tables = pd.read_html(StringIO(html_string))
 
+    rows = soup.find_all("div", class_="divTableRow")
+    column_names = ['Subject Code', 'Subject Name', 'Internal Marks', 'External Marks', 'Total', 'Result', 'Announced / Updated on']
+    target_string="Semester : "
+    sems=[int((x.text).replace(target_string,""))for x in soup.find_all("div",{"style":"text-align:center;padding:5px;"})]
+    print(sems)
     table_data = []
+    table1_data = []
+    dfs = {}
+    i=0
     for row in rows:
-        cells = row.find_all("div", class_="divTableCell")
-        row_data = [cell.text.strip() for cell in cells]
-        table_data.append(row_data)
-    print()
-    df_marks = pd.DataFrame(table_data[1:], columns=table_data[0])
-    df_marks = df_marks.iloc[:-1 , :]
-    df_marks = df_marks.drop('Announced / Updated on', axis=1)
-    print(df_marks)
+        cells = [cell.text.strip() for cell in row.find_all("div", class_="divTableCell")]
+        table_data.append(cells)
 
-    details: list = list()
-    details.append(tables[0][1][0].strip(":"))
-    details.append(tables[0][1][1].strip(":"))
+    for row in table_data[:-1]:
+        if row == column_names:
+            if table1_data:
+                dfs[sems[i]]=(pd.DataFrame(table1_data[1:], columns=table1_data[0]).drop('Announced / Updated on', axis=1))
+                table1_data = []
+                i+=1
+            table1_data.append(row)
+        else:
+            table1_data.append(row)
 
-    return df_marks, details
+    if table1_data:
+        #i+=1
+        dfs[sems[i]]=(pd.DataFrame(table1_data[1:], columns=table1_data[0]).drop('Announced / Updated on', axis=1))
+        
+
+    details = [tables[0][1][0].strip(":"), tables[0][1][1].strip(":")]
+
+    return dfs, details
+
 
 
 def cal(df_marks, details):
@@ -94,3 +114,8 @@ def cal(df_marks, details):
 
     #print("\n \n \n \n ",df_marks,"\n \n \n \n next one")
     return df_marks, details
+
+
+if __name__=="__main__":
+    dfs, details = extractor("C:/Users/Admin/Desktop/New folder/vtu-results/tempwork/pages/1BI22CD004.html")
+    pprint.pprint(dfs)
