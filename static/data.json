@@ -50,6 +50,9 @@
   "BCSL305": {
     "Credits": 1
   },
+  "BCS306A": {
+    "Credits": 3
+  },
   "BCSK307": {
     "Credits": 1
   },
@@ -92,29 +95,28 @@
   "BPEK459": {
     "Credits": 0
   },
-  "BMATS201":{
-    "Credits":4
+  "BMATS201": {
+    "Credits": 4
   },
-  "BCHES202":{
-    "Credits":4
+  "BCHES202": {
+    "Credits": 4
   },
-  "BCEDK203":{
-    "Credits":3
+  "BCEDK203": {
+    "Credits": 3
   },
-  "BPWSK206":{
-    "Credits":1
+  "BPWSK206": {
+    "Credits": 1
   },
-  "BICOK207":{
-    "Credits":1
+  "BICOK207": {
+    "Credits": 1
   },
-  "BSFHK258":{
-    "Credits":1
+  "BSFHK258": {
+    "Credits": 1
   },
-  "BPLCK205B":{
-    "Credits":3
+  "BPLCK205B": {
+    "Credits": 3
   },
-  "BESCK204C":{
-    "Credits":3
+  "BESCK204C": {
+    "Credits": 3
   }
-
 }

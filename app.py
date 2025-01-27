@@ -1,12 +1,11 @@
 import logging
-import logging
 import threading
 
 from flask import Flask, render_template, jsonify, redirect, url_for, request
 from flask_socketio import SocketIO
 
-from helpers import dbhandler,formats
-from helpers import fetchdata
+from new_helpers import dbhandler,formats
+from new_helpers import fetchdata
 
 # Configure logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(module)s - %(message)s - '
@@ -47,13 +46,9 @@ def get_student(usn):
     try:
         for i in range(1, 9):
             print(i)
-            try:
-                x, y = formats.neat_marks(i, usn)
-                table.append(x)
-                data.append(y)
-            except:
-                    pass
-            
+            x, y = formats.neat_marks(i, usn)
+            table.append(x)
+            data.append(y)
     except Exception as e:
         # log with traceback
         logging.error(f"Error fetching student data: {e}", exc_info=True)

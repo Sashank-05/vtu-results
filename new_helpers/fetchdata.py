@@ -11,15 +11,17 @@ from selenium.webdriver.chrome.service import Service
 
 if os.getcwd().endswith("helpers"):
     from captcha import Captcha
-    from extract_table import extractor, cal
+    from extract import Extract
+    from new_helpers.formats import dataframe_to_sql
+
     import dbhandler
 
     base = "../tempwork/"
 else:
     from helpers.captcha import Captcha
-    from helpers.extract_table import extractor, cal
-    from helpers.formats import dataframe_to_sql, get_subject_code
-    from helpers import dbhandler
+    from new_helpers.extract import Extract
+    from new_helpers.formats import dataframe_to_sql, get_subject_code
+    from new_helpers import dbhandler
 
     base = "tempwork/"
 
@@ -212,29 +214,53 @@ class ThreadManager:
         return ranges
 
     def save_to_db(self):
-        paths = os.path.join(base, "pages/")
-        files = os.listdir(paths)
-        # check if the page starts with db table name's prefix
-        files = [file for file in files if self.db_table.split("_")[0] in file]
+        files = os.listdir(base + "pages")
+        files = [f for f in files if f.endswith(".html") and f.startswith(self.usn_prefix)]
+        dbcursor = dbhandler.DBHandler()
+        # extract tables
         for file in files:
-            x, y = extractor(os.path.join(paths, file))
-            dfs = cal(x, y)
-            for sem, df in zip(dfs.keys(), dfs.values()):
-                print(f"Semester: {sem}")
+            df = Extract(base + f"pages/{file}")
+            dfdict = df.get_dfs()
+
+            for sem in dfdict.keys():
+                if sem == "Name" or sem == "USN" or dfdict[sem] is None:
+                    continue
+                details = df.calculate(dfdict[sem])
+                # now get table name from usn_prefix and sem
+                table_name = f"X{self.usn_prefix}_SEM_{sem}"
+                try:
+                    columns = []
+                    for col in dfdict[sem]["Subject Code"]:
+                        columns.append(col + "_internal")
+                        columns.append(col + "_external")
+
+                    dbcursor.create_table_columns(table_name, columns)
 
 
+                except sqlite3.OperationalError as e:
+                    if "already exists" in str(e):
+                        print("already exists")
+                    elif "duplicate column name" in str(e):
+                        print("duplicate")
+                    else:
+                        logging.error(f"Error creating table: {e}")
+                finally:
+                    inte, exte = dataframe_to_sql(dfdict[sem])
+                    data = [inte, exte]
+                    additional_data = [dfdict["Name"], dfdict["USN"]]
+                    dbcursor.push_data_into_table(table_name, inte, exte, additional_data)
+                    print(f"Pushed data for {table_name}")
+                    print(inte, exte, additional_data)
 
-            columns = get_subject_code(df)
-            # vtu-results\tempwork\pages
-            table = dbhandler.DBHandler()
-            try:
-                table.create_table_columns(self.db_table, columns)
-            except:
-                print("Table already created")
+        # check if table is already created
+        # if not create table
+        # if table and data exists => get the table, check for changed values, then update
+        # push data into table
+        pass
 
 
 if __name__ == "__main__":
-    thread_manager = ThreadManager("https://results.vtu.ac.in/DJcbcs24/index.php", "1BI23EC",
+    thread_manager = ThreadManager("https://results.vtu.ac.in/DJcbcs24/index.php", "1BI22CD",
                                    "1BI23EC_SEM_1", 240, num_threads=8)
     # thread_manager.run_threads()
     print(f"Total global failed attempts: {global_fails}")

@@ -3,11 +3,10 @@ import os
 
 import pandas as pd
 
-if os.getcwd().endswith('helpers'):
-    import dbhandler, Extract
+if os.getcwd().endswith('new_helpers'):
+    import dbhandler, extract
 else:
-    from helpers import dbhandler, extract_table
-
+    from new_helpers import dbhandler, extract
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(module)s - %(message)s')
 
@@ -47,9 +46,11 @@ def neat_marks(sem: int, usn: str, batch=23): #fixed this function
     column_names = ["Subject Code", "Internal Marks", "External Marks", "Total", "Result"]
     df = pd.DataFrame(list(zip(new_column, internal_marks, external_marks, total_marks, result)), columns=column_names)
     df_dic={sem:df}
-    df_ = extract_table.cal(df_dic, [])
-    df=(df_[sem][0])
-    extras=(df_[sem][1])
+    extractor = extract.Extract()
+    df_ = extractor.calculate(df)
+    print(df_)
+    df = df_[0]
+    extras=df_[1]
     html_table = df.to_html(index=False)
 
     if html_table:
@@ -60,14 +61,13 @@ def neat_marks(sem: int, usn: str, batch=23): #fixed this function
         return [0],[0]
 
 
-def dataframe_to_sql(df: pd.DataFrame, additional_data: list) -> tuple:
+def dataframe_to_sql(df: pd.DataFrame) -> tuple:
     df = df.drop(columns=["Subject Name", "Grade Points", "Credits Obtained", "Result"], errors='ignore')
     internal_marks = list(df["Internal Marks"])
     external_marks = list(df["External Marks"])
     total_marks = list(df["Total"])
-    other_data = additional_data
 
-    return internal_marks, external_marks, other_data
+    return internal_marks, external_marks
 
 
 def df_to_csv(self, df, data):
