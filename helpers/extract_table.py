@@ -59,63 +59,78 @@ def extractor(saved_html):
 
 
 def cal(df_marks, details):
-    sub_status = list(df_marks["Result"])
-    grade: list = []
-    total_credits = 0
+    df_cal={}
+    for df,sem in zip(df_marks.values(),df_marks.keys()):
+        sub_status = list(df["Result"])
+        grade: list = []
+        total_credits = 0
 
-    if "F" not in sub_status:
-        for i in list(df_marks["Total"]):
-            if int(i) >= 90:
-                grade.append(10)
-            elif int(i) >= 80:
-                grade.append(9)
-            elif int(i) >= 70:
-                grade.append(8)
-            elif int(i) >= 60:
-                grade.append(7)
-            elif int(i) >= 50:
-                grade.append(6)
-            elif int(i) >= 40:
-                grade.append(5)
+        if "F" not in sub_status and "A" not in sub_status:
+            for i in list(df["Total"]):
+                if int(i) >= 90:
+                    grade.append(10)
+                elif int(i) >= 80:
+                    grade.append(9)
+                elif int(i) >= 70:
+                    grade.append(8)
+                elif int(i) >= 60:
+                    grade.append(7)
+                elif int(i) >= 50:
+                    grade.append(6)
+                elif int(i) >= 40:
+                    grade.append(5)
 
-        try:
-            df_marks.insert(6, "Grade Points", grade)
-        except:
-            df_marks["Grade Points"] = grade
+            try:
+                df.insert(6, "Grade Points", grade)
+            except:
+                df["Grade Points"] = grade
 
-        credit_obtained: list = []
-        for i, j in zip(list(df_marks["Grade Points"]), list(df_marks["Subject Code"])):
-            credits = subject_data.get(j.strip(), {}).get("Credits", 0)
-            credit_obtained.append(credits * i)
-            total_credits += credits
+            credit_obtained: list = []
+            for i, j in zip(list(df["Grade Points"]), list(df["Subject Code"])):
+                credits = subject_data.get(j.strip(), {}).get("Credits", 0)
+                credit_obtained.append(credits * i)
+                total_credits += credits
 
-        try:
-            df_marks.insert(7, "Credits Obtained", credit_obtained)
-        except:
-            df_marks["Credits Obtained"] = credit_obtained
+            try:
+                df.insert(7, "Credits Obtained", credit_obtained)
+            except:
+                df["Credits Obtained"] = credit_obtained
 
-        #logging.info(df_marks)
-        print(df_marks)
-        details.append(sum([int(x) for x in list(df_marks["Total"])]))
-        total_credits_obtained = sum([int(x) for x in list(df_marks["Credits Obtained"])])
+            #logging.info(df_marks)
+            #print(df)
+            details.append(sum([int(x) for x in list(df["Total"])]))
+            total_credits_obtained = sum([int(x) for x in list(df["Credits Obtained"])])
 
-        details.append(total_credits_obtained / total_credits)
-        details.append("PASS")
+            details.append(total_credits_obtained / total_credits)
+            details.append("PASS")
+            
+            df_cal[sem]=[df,details]
+        else:
+            try:
+                details.append(sum([int(x) for x in list(df["Total"])]))
+            except:
+                details.append(" ")
 
-    else:
-        try:
-            details.append(sum([int(x) for x in list(df_marks["Total"])]))
-        except:
-            details.append(" ")
-
-        details.append("NAN")
-        count = sub_status.count("F")
-        details.append(f"{count} Fail")
+            details.append("NAN")
+            fcount = sub_status.count("F")
+            acount = sub_status.count("A")
+            
+            details.append(f"{fcount} Fail")
+            details.append(f"{acount} Absent")
+            
+            df_cal[sem]=[df,details]
 
     #print("\n \n \n \n ",df_marks,"\n \n \n \n next one")
-    return df_marks, details
+    return df_cal
+
+    #returns dictionary of array containing dataframes and details(array)
+    #dict = { sem :[df,[usn,name,total,gpa,pass/fail,absent if any]]}
+    
 
 
 if __name__=="__main__":
-    dfs, details = extractor("C:/Users/Admin/Desktop/New folder/vtu-results/tempwork/pages/1BI22CD004.html")
+    dfs, details = extractor(r"C:\Users\visha\Desktop\vtu_extracter\vtu-results\vtu-results\tempwork\pages\1BI22CD004.html")
     pprint.pprint(dfs)
+    df=cal(dfs,details)
+    pprint.pprint(df)
+    

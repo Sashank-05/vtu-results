@@ -12,7 +12,7 @@ else:
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(module)s - %(message)s')
 
 
-def neat_marks(sem: int, usn: str, batch=23):
+def neat_marks(sem: int, usn: str, batch=23): #fixed this function
     table = dbhandler.DBHandler()
     table_name = usn[1:5]
     branch = usn[5:7]
@@ -46,13 +46,15 @@ def neat_marks(sem: int, usn: str, batch=23):
 
     column_names = ["Subject Code", "Internal Marks", "External Marks", "Total", "Result"]
     df = pd.DataFrame(list(zip(new_column, internal_marks, external_marks, total_marks, result)), columns=column_names)
-
-    df, extras = extract_table.cal(df, [])
+    df_dic={sem:df}
+    df_ = extract_table.cal(df_dic, [])
+    df=(df_[sem][0])
+    extras=(df_[sem][1])
     html_table = df.to_html(index=False)
 
     if html_table:
         logging.info("Successfully generated HTML table.")
-        return html_table, extras
+        return html_table,extras
     else:
         logging.error("Failed to generate HTML table.")
         return [0],[0]
@@ -92,4 +94,4 @@ def get_subject_code(df):
 
 
 if __name__ == "__main__":
-    logging.info(neat_marks(2, "1bi23cd055"))
+    logging.info(neat_marks(1, "1bi23cd055"))
