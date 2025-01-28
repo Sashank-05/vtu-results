@@ -11,12 +11,12 @@ const chartConfig = {
     },
     scales: {
         x: {
-            grid: { color: 'rgba(255,255,255,0.1)' },
-            ticks: { color: '#fff' }
+            grid: {color: 'rgba(255,255,255,0.1)'},
+            ticks: {color: '#fff'}
         },
         y: {
-            grid: { color: 'rgba(255,255,255,0.1)' },
-            ticks: { color: '#fff' }
+            grid: {color: 'rgba(255,255,255,0.1)'},
+            ticks: {color: '#fff'}
         }
     }
 };
@@ -171,7 +171,7 @@ function getStudentMarks() {
     const apiUrl = `/api/v1/student/${usn}`;
 
     destroyCharts(); // Clear previous charts
-    
+
     fetch(apiUrl)
         .then((response) => response.json())
         .then((data) => {
@@ -214,14 +214,30 @@ function getStudentMarks() {
 
 
 function getSemMarks() {
+    //const sem = document.getElementById("semInput").value;
+    let sem;
+    console.log(document.getElementById("seminput").style.visibility)
+    if (document.getElementById("seminput").style.visibility === "hidden" || document.getElementById("seminput").style.visibility === "") {
+        console.log("made visible");
+        document.getElementById("seminput").style.visibility = "visible";
+        return;
+    } else {
+         sem = document.getElementById("semInput").value;
+    }
 
     const usnprefix = document.getElementById("usnInput").value;
     const branchCode = usnprefix.slice(0, 7); // 1CR15CD
-    const sem = document.getElementById("semInput").value;
-    const apiUrl = `/api/v1/${branchCode}/${sem}`;
 
+    let apiUrl;
+    try {
+        apiUrl = `/api/v1/${branchCode}/${sem}`;
+    } catch (error) {
+        console.log("Error:", error);
+        document.getElementById("seminput").style.visibility = "visible";
+        return
+    }
     destroyCharts();
-    
+
     fetch(apiUrl)
         .then((response) => response.json())
         .then((data) => {
@@ -252,19 +268,19 @@ function processSubjectData(data) {
     // Example: return array of { subject: 'Math', average: 85 }
     const columns = data[1].slice(2, -3);
     const subjectAverages = [];
-    
+
     for (let i = 0; i < columns.length; i += 2) {
         const subject = columns[i].split('_')[0];
         const totalMarks = data[0].reduce((sum, row) => {
-            return sum + (parseFloat(row[i+2]) + parseFloat(row[i+3]));
+            return sum + (parseFloat(row[i + 2]) + parseFloat(row[i + 3]));
         }, 0);
-        
+
         subjectAverages.push({
             subject: subject,
             average: totalMarks / data[0].length
         });
     }
-    
+
     return subjectAverages;
 }
 

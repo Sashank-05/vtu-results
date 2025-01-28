@@ -145,6 +145,8 @@ h1 {
     transition: all 0.3s ease;
 }
 
+
+
 .input-field input:focus {
     outline: none;
     background: rgba(255, 255, 255, 0.07);
@@ -275,4 +277,19 @@ h1 {
     padding: 1rem;
     background: rgba(255, 68, 68, 0.1);
     border-radius: 8px;
+}
+
+#seminput{
+    visibility: hidden;
+}
+
+#seminput select{
+    width: 100%;
+    padding: 1.25rem 1.25rem 1.25rem 3rem;
+    background: rgba(255, 255, 255, 0.03);
+    border: none;
+    border-radius: 12px;
+    color: var(--text);
+    font-size: 1.1rem;
+    transition: all 0.3s ease;
 }
