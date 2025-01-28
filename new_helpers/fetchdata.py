@@ -18,7 +18,7 @@ if os.getcwd().endswith("helpers"):
 
     base = "../tempwork/"
 else:
-    from helpers.captcha import Captcha
+    from new_helpers.captcha import Captcha
     from new_helpers.extract import Extract
     from new_helpers.formats import dataframe_to_sql, get_subject_code
     from new_helpers import dbhandler
@@ -245,8 +245,7 @@ class ThreadManager:
                     else:
                         logging.error(f"Error creating table: {e}")
                 finally:
-                    inte, exte = dataframe_to_sql(dfdict[sem])
-                    data = [inte, exte]
+                    inte, exte = dataframe_to_sql(details[0])
                     additional_data = [dfdict["Name"], dfdict["USN"]]
                     dbcursor.push_data_into_table(table_name, inte, exte, additional_data)
                     print(f"Pushed data for {table_name}")

@@ -11,7 +11,7 @@ else:
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(module)s - %(message)s')
 
 
-def neat_marks(sem: int, usn: str, batch=23): #fixed this function
+def neat_marks(sem: int, usn: str, batch=23):  # fixed this function
     table = dbhandler.DBHandler()
     table_name = usn[1:5]
     branch = usn[5:7]
@@ -45,32 +45,30 @@ def neat_marks(sem: int, usn: str, batch=23): #fixed this function
 
     column_names = ["Subject Code", "Internal Marks", "External Marks", "Total", "Result"]
     df = pd.DataFrame(list(zip(new_column, internal_marks, external_marks, total_marks, result)), columns=column_names)
-    df_dic={sem:df}
     extractor = extract.Extract()
     df_ = extractor.calculate(df)
     print(df_)
     df = df_[0]
-    extras=df_[1]
+    extras = df_[1]
     html_table = df.to_html(index=False)
 
     if html_table:
         logging.info("Successfully generated HTML table.")
-        return html_table,extras
+        return html_table, extras
     else:
         logging.error("Failed to generate HTML table.")
-        return [0],[0]
+        return [0], [0]
 
 
 def dataframe_to_sql(df: pd.DataFrame) -> tuple:
     df = df.drop(columns=["Subject Name", "Grade Points", "Credits Obtained", "Result"], errors='ignore')
     internal_marks = list(df["Internal Marks"])
     external_marks = list(df["External Marks"])
-    total_marks = list(df["Total"])
 
     return internal_marks, external_marks
 
 
-def df_to_csv(self, df, data):
+def df_to_csv(df, data):
     emp = ["", "", "", "", "", "", ""]
     emp.insert(0, data[2])
     emp.insert(0, data[3])

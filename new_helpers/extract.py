@@ -88,7 +88,8 @@ class Extract:
 
         return original
 
-    def calculate(self, df: pandas.DataFrame) -> list:
+    @staticmethod
+    def calculate(df: pandas.DataFrame) -> list:
         """
         Calculate the GPA and other details from the dataframe
 
@@ -173,6 +174,6 @@ class Extract:
             gpa = "NAN"
         else:
             gpa = sum(obtained) / total_credits
-        mainList = [df, [sum(total_marks), gpa, result.count("P"), result.count("F"),
+        mainlist = [df, [sum(total_marks), gpa, result.count("P"), result.count("F"),
                          result.count("A")]]
-        return mainList
+        return mainlist

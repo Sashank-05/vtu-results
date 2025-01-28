@@ -44,25 +44,23 @@ class DBHandler:
 
     @reset_cursor
     def push_data_into_table(self, table_name: str, inte: list, ext: list, other: list):
-        try:
-            placeholders = ', '.join(['?'] * (len(inte) + len(ext) + len(other)))
-            sql = f"INSERT INTO {table_name} VALUES ({placeholders})"
-            marks = []
-            for i, j in zip(inte, ext):
-                marks.append(i)
-                marks.append(j)
-            values = [other[0].strip(), other[1].strip()] + marks + other[2:]
-            # print(values)
-            self.cursor.execute(sql, values)
 
-        except Exception as e:
-            pass
+        placeholders = ', '.join(['?'] * (len(inte) + len(ext) + len(other)))
+        sql = f"INSERT INTO {table_name} VALUES ({placeholders})"
+        marks = []
+        for i, j in zip(inte, ext):
+            marks.append(i)
+            marks.append(j)
+        values = [other[0].strip(), other[1].strip()] + marks + other[2:]
+        # print(values)
+        self.cursor.execute(sql, values)
+
         self.connection.commit()
 
     @reset_cursor
-    def get_student_marks(self, id, sem, usn):
+    def get_student_marks(self, branch_code, sem, usn):
         try:
-            sql = f"SELECT * FROM {id}_SEM_{sem} WHERE USN LIKE ?"
+            sql = f"SELECT * FROM {branch_code}_SEM_{sem} WHERE USN LIKE ?"
             self.cursor.execute(sql, (usn,))
             result = self.cursor.fetchall()
             return result
@@ -70,10 +68,10 @@ class DBHandler:
             pass
 
     @reset_cursor
-    def get_semester_marks(self, id, sem):
+    def get_semester_marks(self, branch_code, sem):
         sql = "SELECT * FROM {id}_SEM_{sem}"
-        print(sql.format(id=id, sem=sem))
-        self.cursor.execute(sql.format(id=id, sem=sem))
+        print(sql.format(id=branch_code, sem=sem))
+        self.cursor.execute(sql.format(id=branch_code, sem=sem))
         result = self.cursor.fetchall()
         return result
 
@@ -93,6 +91,7 @@ class DBHandler:
             cols.append(column[0])
 
         return cols
+
     @reset_cursor
     def get_usn(self, table_name: str, usn: str):
         sql = f"SELECT * FROM {table_name} WHERE USN LIKE ?"
@@ -108,7 +107,6 @@ class DBHandler:
         values = list(kwargs.values()) + [usn]
         self.cursor.execute(sql, values)
         self.connection.commit()
-
 
     def close(self):
         if self.connection:

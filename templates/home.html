@@ -1,76 +1,90 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8"/>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-    <title>Student Marks Retrieval</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VTU Result Analysis</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans:ital,wght@0,400;0,700;1,400&display=swap"
-          rel="stylesheet">
-    <link rel="stylesheet" href="static/main.css"/>
-
+    <link href="static/main.css" rel="stylesheet">
 </head>
 <body>
-
+<div class="glow"></div>
 <div class="container">
-    <h1 class="center-align">Student Marks Retrieval</h1>
 
-    <div class="row">
-        <div class="col s12 m6">
-            <h5>Get Individual Student Marks</h5>
+    <header>
+        <h1>VTU Result Analysis</h1>
+
+        <p class="subtext">Results and Analysis. All in one place.</p>
+    </header>
+
+    <div class="analysis-container">
+        <div class="input-card">
+            <i class="material-icons">school</i>
             <div class="input-field">
-                <input id="usnInput" type="text" class="validate">
-                <label for="usnInput">Enter USN</label>
+                <input type="text" id="usnInput" placeholder=" " pattern="1[A-Z]{2}\d{2}[A-Z]{2}\d{3}">
+                <label for="usnInput">University Seat Number</label>
+                <div class="underline"></div>
             </div>
-            <button class="btn waves-effect waves-light deep-purple lighten-1" onclick="getStudentMarks()">
-                Get Student Marks
-                <i class="material-icons right">send</i>
-            </button>
+
+            <div class="input-card">
+                <!-- Select between 1 to 8 -->
+                <i class="material-icons">filter_1</i>
+                <select id="semInput">
+                    <option value="1">Semester 1</option>
+                    <option value="2">Semester 2</option>
+                    <option value="3">Semester 3</option>
+                    <option value="4">Semester 4</option>
+                    <option value="5">Semester 5</option>
+                    <option value="6">Semester 6</option>
+                    <option value="7">Semester 7</option>
+                    <option value="8">Semester 8</option>
+                </select>
+            </div>
+
+
+            <div class="action-buttons">
+                <button class="glass-button" onclick="getStudentMarks()">
+                    <span>Generate Scorecard</span>
+                    <i class="material-icons">arrow_forward</i>
+                </button>
+                <button class="glass-button" onclick="getSemMarks()">
+                    <span>Batch Analysis</span>
+                    <i class="material-icons">insights</i>
+                </button>
+            </div>
         </div>
 
-        <div class="col s12 m6">
-            <h5>Get Semester Marks</h5>
-            <div class="input-field">
-                <select id="branchDropdown">
-                    <option value="" disabled selected>Choose Branch</option>
-                    <option value="BI23CD">CD</option>
-                    <option value="BI23CS">CS</option>
-                    <option value="BI23EC">EC</option>
-                </select>
-                <label>Select Branch</label>
+        <!-- Graph Container -->
+        <div class="visualization-panel">
+            <div class="graph-container">
+                <canvas id="performanceChart"></canvas>
             </div>
-            <div class="input-field">
-                <select id="semDropdown">
-                    <option value="" disabled selected>Choose Semester</option>
-                    <option value="1">1</option>
-                    <option value="2">2</option>
-                    <option value="3">3</option>
-                    <option value="4">4</option>
-                    <option value="5">5</option>
-                    <option value="6">6</option>
-                    <option value="7">7</option>
-                    <option value="8">8</option>
-                </select>
-                <label>Select Semester</label>
+            <div class="metrics-grid">
+                <div class="metric-card">
+                    <i class="material-icons">speed</i>
+                    <h4>CGPA Trend</h4>
+                    <canvas id="trendChart"></canvas>
+                </div>
+                <div class="metric-card">
+                    <i class="material-icons">bar_chart</i>
+                    <h4>Subject-wise</h4>
+                    <canvas id="subjectChart"></canvas>
+                </div>
             </div>
-            <button class="btn waves-effect waves-light deep-purple lighten-1" onclick="getSemMarks()">
-                Get Semester Marks
-                <i class="material-icons right">list</i>
-            </button>
         </div>
     </div>
 
     <div id="results" class="results">
-        <!-- Table will be inserted here -->
+        <!-- Results will be injected here -->
     </div>
-    <div id="tooltip" class="tooltip"></div>
-    <div id="download" class="download_button"></div>
 </div>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
-<script src="static/main.js"></script>
+<div id="results" class="results"></div>
+<div id="tooltip" class="tooltip"></div>
 
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="static/main.js"></script>
 
 </body>
 </html>
