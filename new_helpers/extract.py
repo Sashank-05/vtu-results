@@ -15,7 +15,7 @@ with open(os.path.join(os.path.dirname(__file__), '../static/data.json'), 'r') a
 
 
 class Extract:
-    def __init__(self, saved_html="tempwork/saved.html"):
+    def __init__(self, saved_html="C:/Users/visha/Desktop/vtu_extracter/vtu-results/tempwork/pages"):
         self.saved_html = saved_html
 
     def get_dfs(self) -> dict:
@@ -174,6 +174,16 @@ class Extract:
             gpa = "NAN"
         else:
             gpa = sum(obtained) / total_credits
-        mainlist = [df, [sum(total_marks), gpa, result.count("P"), result.count("F"),
-                         result.count("A")]]
+        mainlist = [df, [sum(total_marks), gpa, result.count("P"),result.count("A")]]
         return mainlist
+
+
+if __name__=="__main__":
+    print("Running")
+    e = Extract()
+    data = e.get_dfs()
+    pprint.pprint(data)
+    for sem in range(1, 9):
+        if data[sem] is not None:
+            print(Extract.calculate(data[sem][0]))
+    print("Done")

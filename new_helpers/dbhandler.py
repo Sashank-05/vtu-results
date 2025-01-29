@@ -30,6 +30,7 @@ class DBHandler:
 
     @reset_cursor
     def create_table_columns(self, table_name: str, sub_columns: list):
+        
         sql_create_table = f"""CREATE TABLE IF NOT EXISTS {table_name} (
                     USN VARCHAR(12),
                     NAME VARCHAR(25)
@@ -39,6 +40,10 @@ class DBHandler:
         for sub in sub_columns:
             sql = f"ALTER TABLE {table_name} ADD COLUMN {sub} VARCHAR(100);"
             self.cursor.execute(sql)
+            
+          
+        sql1 = f"ALTER TABLE {table_name} ADD COLUMN Absent VARCHAR(100);"
+        self.cursor.execute(sql1)
 
         self.connection.commit()
 
@@ -52,7 +57,7 @@ class DBHandler:
             marks.append(i)
             marks.append(j)
         values = [other[0].strip(), other[1].strip()] + marks + other[2:]
-        # print(values)
+        print(other)
         self.cursor.execute(sql, values)
 
         self.connection.commit()

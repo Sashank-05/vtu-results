@@ -220,6 +220,7 @@ class ThreadManager:
         # extract tables
         for file in files:
             df = Extract(base + f"pages/{file}")
+            print(df)
             dfdict = df.get_dfs()
 
             for sem in dfdict.keys():
@@ -233,8 +234,13 @@ class ThreadManager:
                     for col in dfdict[sem]["Subject Code"]:
                         columns.append(col + "_internal")
                         columns.append(col + "_external")
-
+                    columns.append("Total")
+                    columns.append("CGPA")
+                    columns.append("Pass")
+                    columns.append("Absent")
+                    
                     dbcursor.create_table_columns(table_name, columns)
+                    print("created table")
 
 
                 except sqlite3.OperationalError as e:
@@ -246,7 +252,7 @@ class ThreadManager:
                         logging.error(f"Error creating table: {e}")
                 finally:
                     inte, exte = dataframe_to_sql(details[0])
-                    additional_data = [dfdict["Name"], dfdict["USN"]]
+                    additional_data = [dfdict["Name"], dfdict["USN"]]+details[1]
                     dbcursor.push_data_into_table(table_name, inte, exte, additional_data)
                     print(f"Pushed data for {table_name}")
                     print(inte, exte, additional_data)
