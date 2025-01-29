@@ -255,12 +255,12 @@ class ThreadManager:
         # if not create table
         # if table and data exists => get the table, check for changed values, then update
         # push data into table
-        pass
+
 
 
 if __name__ == "__main__":
     thread_manager = ThreadManager("https://results.vtu.ac.in/DJcbcs24/index.php", "1BI22CD",
-                                   "1BI23EC_SEM_1", 240, num_threads=8)
+                                   "1BI22CD", 240, num_threads=8)
     # thread_manager.run_threads()
     print(f"Total global failed attempts: {global_fails}")
     thread_manager.save_to_db()

@@ -1,4 +1,4 @@
-// Add this at the top to initialize Chart.js
+
 const chartConfig = {
     maintainAspectRatio: false,
     responsive: true,
@@ -34,6 +34,8 @@ function destroyCharts() {
         cgpaTrendChart = null;
     }
 }
+
+
 
 function createTableFromData(columns, data) {
     if (!Array.isArray(columns) || !Array.isArray(data)) {
@@ -148,7 +150,10 @@ function createCGPAChart(cgpaData) {
 }
 
 function createSubjectChart(subjectData) {
-    const ctx = document.getElementById('subjectChart').getContext('2d');
+    let ctx = document.getElementById('subjectChart').getContext('2d');
+    console.log("Subject Data:", subjectData);
+    console.log("Canvas Context:", ctx);
+    destroyCharts();
     performanceChart = new Chart(ctx, {
         type: 'bar',
         data: {
