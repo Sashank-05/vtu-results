@@ -2,271 +2,328 @@ import logging
 import os
 import sqlite3
 import threading
+from io import BytesIO
 
 import cv2 as cv
+import numpy as np
 import pytesseract
-import selenium.common.exceptions
 from selenium import webdriver
 from selenium.webdriver.chrome.service import Service
+from selenium.webdriver.common.by import By
+from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver.support.ui import WebDriverWait
 
+# Configure paths and imports based on project structure
 if os.getcwd().endswith("helpers"):
     from captcha import Captcha
     from extract import Extract
-    from new_helpers.formats import dataframe_to_sql
-
+    from formats import dataframe_to_sql
     import dbhandler
 
-    base = "../tempwork/"
+    BASE_DIR = "../tempwork/"
 else:
     from new_helpers.captcha import Captcha
     from new_helpers.extract import Extract
-    from new_helpers.formats import dataframe_to_sql, get_subject_code
+    from new_helpers.formats import dataframe_to_sql
     from new_helpers import dbhandler
 
-    base = "tempwork/"
+    BASE_DIR = "tempwork/"
 
+# Configure Tesseract
 pytesseract.pytesseract.tesseract_cmd = r'C:\Program Files\Tesseract-OCR\tesseract'
 
 # Configure logging
-logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(module)s - %(message)s - '
-                                               '[%(filename)s:%(lineno)d in %(funcName)s]')
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(levelname)s - %(message)s',
+    handlers=[
+        logging.StreamHandler(),
+        logging.FileHandler(os.path.join(BASE_DIR, 'scraper.log'))
+    ]
+)
 
-history = {}
-global_fails = 0
+
+class ThreadSafeSet:
+    """Thread-safe set to store failed USNs."""
+
+    def __init__(self):
+        self._set = set()
+        self._lock = threading.Lock()
+
+    def add(self, item):
+        with self._lock:
+            self._set.add(item)
+
+    def pop_all(self):
+        with self._lock:
+            items = list(self._set)
+            self._set.clear()
+            return items
+
+
+# Global variable to track failed USNs
+global_fails = ThreadSafeSet()
 
 
 class FillForm:
-    def __init__(self, base_url, usn_prefix, start_range, end_range, db_table, socketio, driver=None):
+    def __init__(self, usn_list, base_url, usn_prefix, db_table, socketio=None, is_retry=False):
+        self.usn_list = usn_list
         self.base_url = base_url
         self.usn_prefix = usn_prefix
-        self.start_range = start_range
-        self.end_range = end_range
         self.db_table = db_table
-        self.fail_count = 0
         self.socketio = socketio
+        self.is_retry = is_retry
+        self.driver = self._create_driver()
+        self._prepare_directories()
 
-        logging.info(f"Starting thread for USN range: {self.start_range} to {self.end_range}")
+    def _create_driver(self):
+        """Create and configure the Selenium WebDriver."""
+        chrome_options = webdriver.ChromeOptions()
+        chrome_options.add_argument("--headless")
+        chrome_options.add_argument("--no-sandbox")
+        chrome_options.add_argument("--disable-dev-shm-usage")
+        chrome_options.add_argument("--window-size=1920x1080")
+        return webdriver.Chrome(service=Service(), options=chrome_options)
 
-        if driver is None:
-            # Selenium Chrome options
-            chrome_options = webdriver.ChromeOptions()
-            chrome_options.add_argument("--headless")
-            chrome_options.add_argument("--no-sandbox")
-            chrome_options.add_argument("--disable-dev-shm-usage")
-            chrome_options.add_argument("--disable-gpu")
-            chrome_options.add_argument("--window-size=1920x1080")
+    def _prepare_directories(self):
+        """Ensure necessary directories exist."""
+        os.makedirs(os.path.join(BASE_DIR, "pages"), exist_ok=True)
+        os.makedirs(os.path.join(BASE_DIR, "current"), exist_ok=True)
 
-            self.driver = webdriver.Chrome(service=Service(), options=chrome_options)
-        else:
-            self.driver = driver
-
-        # Prepare directory for saving HTML pages
-        self.pages_dir = "pages"
-        self.current_dir = "current"
-        os.makedirs(base + self.pages_dir, exist_ok=True)
-        os.makedirs(base + self.current_dir, exist_ok=True)
-
-    def handle_alert(self, usn):
+    def _process_captcha(self):
+        """Process CAPTCHA image and extract text."""
         try:
-            alert = self.driver.switch_to.alert
-            if alert.text == "University Seat Number is not available or Invalid..!":
-                logging.info(f"No results for: {usn}")
-                alert.accept()
-                return
-
-            elif alert.text == "Invalid captcha code !!!":
-                logging.info(f"Invalid CAPTCHA Detected for USN: {usn}")
-                alert.accept()
-                self.fail_count += 1
-                self.fill_form(usn)
-
-        except selenium.common.exceptions.NoAlertPresentException:
-            pass
-
-    def fill_form(self, usn):
-        if usn in history:
-            history[usn] += 1
-        else:
-            history[usn] = 1
-        if history[usn] > 20:
-            logging.info(f"Failed more than 20 times for USN: {usn}")
-            self.socketio.emit('update', {'failed': usn}, namespace='/')
-            return
-        try:
-            self.driver.get(self.base_url)
-            self.driver.implicitly_wait(25)
-            usnbox = self.driver.find_element("name", "lns")
-            cap = self.driver.find_element("name", "captchacode")
-            usnbox.send_keys(usn)
-            self.driver.find_element('xpath', '//img[@alt="CAPTCHA code"]').screenshot(
-                base + "current/" + usn + "_current.png")
-
-            image = cv.imread(base + "current/" + usn + "_current.png")
-            text = Captcha(image).solve_color()
-
-            os.remove(base + "current/" + usn + "_current.png")
-
-            logging.info(f"Detected CAPTCHA Text: {text}")
-            if len(text) > 6 or ' ' in text:
-                raise Exception("Invalid CAPTCHA detected; Length not 6")
-
-            cap.send_keys(text)
-
-            self.driver.find_element('id', "submit").click()
-
-            self.handle_alert(usn)
-
-            self.driver.implicitly_wait(25)
-
-            if "Student Name" in self.driver.page_source:
-                with open(base + f"pages/{usn}.html", "w", encoding="utf8") as file:
-                    file.write(self.driver.page_source)
-                    try:
-                        self.socketio.emit('update', {'usn': usn}, namespace='/')
-                    except AttributeError:
-                        pass
-            else:
-                logging.info(f"Couldn't Save page for USN: {usn}")
-                self.fail_count += 1
-                self.fill_form(usn)
-
-        except selenium.common.exceptions.UnexpectedAlertPresentException:
-            self.handle_alert(usn)
-            # self.save_invalid_captcha(usn)
-            self.fill_form(usn)
-            return
-
+            captcha_element = WebDriverWait(self.driver, 10).until(
+                EC.presence_of_element_located((By.XPATH, '//img[@alt="CAPTCHA code"]'))
+            )
+            png_data = captcha_element.screenshot_as_png
+            image = cv.imdecode(np.frombuffer(png_data, np.uint8), cv.IMREAD_COLOR)
+            return Captcha(image).solve_color()
         except Exception as e:
-            logging.error(f"Exception occurred: {e}", exc_info=True)
-            self.fill_form(usn)
-            return
+            logging.error(f"CAPTCHA processing failed: {e}")
+            return None
+
+    def _handle_alert(self):
+        """Handle any alert popups."""
+        try:
+            alert = WebDriverWait(self.driver, 2).until(EC.alert_is_present())
+            alert_text = alert.text
+            alert.accept()
+            return alert_text
+        except:
+            return None
+
+    def _process_usn(self, usn):
+        """Process a single USN."""
+        max_attempts = 10 if self.is_retry else 5
+        for attempt in range(1, max_attempts + 1):
+            try:
+                self.driver.get(self.base_url)
+                status_prefix = "[RETRY] " if self.is_retry else ""
+                logging.info(f"{status_prefix}Processing {usn} (Attempt {attempt}/{max_attempts})")
+
+                captcha_text = self._process_captcha()
+                if not captcha_text or len(captcha_text) != 6:
+                    raise ValueError("Invalid CAPTCHA generated")
+
+                self.driver.find_element(By.NAME, "lns").send_keys(usn)
+                self.driver.find_element(By.NAME, "captchacode").send_keys(captcha_text)
+                self.driver.find_element(By.ID, "submit").click()
+
+                alert_text = self._handle_alert()
+                if alert_text:
+                    if "Invalid captcha" in alert_text:
+                        logging.warning(f"{status_prefix}Invalid CAPTCHA for {usn}")
+                        continue
+                    if "not available" in alert_text:
+                        logging.info(f"{status_prefix}USN not found: {usn}")
+                        return False
+
+                WebDriverWait(self.driver, 10).until(
+                    EC.presence_of_element_located((By.XPATH, "//*[contains(text(), 'Student Name')]"))
+                )
+
+                self._save_results(usn)
+                logging.info(f"{status_prefix}Successfully processed {usn}")
+                return True
+
+            except Exception as e:
+                logging.error(f"{status_prefix}Error processing {usn}: {str(e)}")
+                if attempt == max_attempts:
+                    logging.error(f"{status_prefix}Failed to process {usn} after {max_attempts} attempts")
+                    global_fails.add(usn)
+                    if self.socketio:
+                        self.socketio.emit('update', {'failed': usn}, namespace='/')
+        return False
+
+    def _save_results(self, usn):
+        """Save the results page for a successful USN."""
+        page_path = os.path.join(BASE_DIR, "pages", f"{usn}.html")
+        with open(page_path, "w", encoding="utf-8") as f:
+            f.write(self.driver.page_source)
+        if self.socketio:
+            self.socketio.emit('update', {'usn': usn}, namespace='/')
 
     def run(self):
-        global global_fails
-        for i in range(self.start_range, self.end_range + 1):
-            usn = f"{self.usn_prefix}{i:03d}"
-            self.fill_form(usn)
-
-        logging.info(f"Total failed attempts: {self.fail_count}")
-        global_fails += self.fail_count
+        """Process all USNs in the list."""
+        total = len(self.usn_list)
+        for i, usn in enumerate(self.usn_list, 1):
+            success = self._process_usn(usn)
+            progress = f"[{'RETRY' if self.is_retry else 'MAIN'}] [{i}/{total}]".ljust(15)
+            status = "SUCCESS" if success else "FAILED"
+            print(f"{progress} {usn}: {status}")
 
 
 class ThreadManager:
     def __init__(self, base_url, usn_prefix, db_table, end_usn=None, ranges=None, num_threads=4, socketio=None):
         self.base_url = base_url
         self.usn_prefix = usn_prefix
-        self.ranges = ranges
         self.db_table = db_table
-        self.num_threads = num_threads
-        self.end_usn = int(end_usn)
         self.socketio = socketio
+        self.num_threads = num_threads
+        self.ranges = ranges or self._calculate_ranges(end_usn, num_threads)
+        self.max_retries = 2  # Configurable retry attempts
 
-        if end_usn is None and ranges is None:
-            raise ValueError("Either end_usn or ranges must be provided")
+    def _calculate_ranges(self, end_usn, num_threads):
+        """Divide USNs into ranges for threading."""
+        base_range = end_usn // num_threads
+        remainder = end_usn % num_threads
+        ranges = []
+        current = 1
 
-        if ranges is None:
-            self.ranges = self.div_usns()
+        for i in range(num_threads):
+            end = current + base_range - 1
+            if i < remainder:
+                end += 1
+            ranges.append((current, end))
+            current = end + 1
 
-    def run_threads(self):
-        try:
-            self.socketio.emit('update', {'usn': 'started', 'end_usn': self.end_usn}, namespace='/')
-        except AttributeError:
-            pass
+        return ranges
 
+    def _generate_usns(self, range_tuple):
+        """Generate USNs from a range tuple."""
+        start, end = range_tuple
+        return [f"{self.usn_prefix}{num:03d}" for num in range(start, end + 1)]
+
+    def _chunk_list(self, lst, n):
+        """Split list into n roughly equal chunks."""
+        k, m = divmod(len(lst), n)
+        return [lst[i * k + min(i, m):(i + 1) * k + min(i + 1, m)] for i in range(n)]
+
+    def _process_batch(self, batches, phase_name, is_retry=False):
+        """Process a batch of USNs."""
+        print(f"\n{' %s Phase ' % phase_name:=^50}")
         threads = []
-        for r in self.ranges:
-            start_range, end_range = r
-            fill_form_instance = FillForm(self.base_url, self.usn_prefix, start_range, end_range, self.db_table,
-                                          self.socketio)
-            thread = threading.Thread(target=fill_form_instance.run)
+        for batch in batches:
+            thread = threading.Thread(
+                target=FillForm(
+                    usn_list=self._generate_usns(batch) if not is_retry else batch,
+                    base_url=self.base_url,
+                    usn_prefix=self.usn_prefix,
+                    db_table=self.db_table,
+                    socketio=self.socketio,
+                    is_retry=is_retry
+                ).run
+            )
             threads.append(thread)
-
-        for thread in threads:
             thread.start()
 
         for thread in threads:
             thread.join()
 
-        try:
+    def _count_processed_usns(self):
+        """Count successfully processed USNs."""
+        processed = set()
+        for f in os.listdir(os.path.join(BASE_DIR, "pages")):
+            if f.startswith(self.usn_prefix) and f.endswith(".html"):
+                processed.add(f.split(".")[0])
+        return len(processed)
+
+    def run_threads(self):
+        """Main method to run the scraper with retries."""
+        # Initial processing
+        self._process_batch(self.ranges, "Main")
+
+        # Retry failed USNs
+        for retry_attempt in range(1, self.max_retries + 1):
+            failed_usns = global_fails.pop_all()
+            if not failed_usns:
+                break
+
+            print(f"\n{' Retrying Failed USNs ':=^50}")
+            print(f"Retry attempt {retry_attempt}/{self.max_retries}")
+            print(f"Failed USNs to retry: {len(failed_usns)}")
+            print("USNs: ", ", ".join(sorted(failed_usns)))
+
+            retry_batches = self._chunk_list(failed_usns, self.num_threads)
+            self._process_batch(retry_batches, f"Retry {retry_attempt}", is_retry=True)
+
+        # Final output
+        remaining_fails = global_fails.pop_all()
+        print(f"\n{' Final Results ':=^50}")
+        print(f"Total successfully processed: {self._count_processed_usns()}")
+        print(f"Total permanent failures: {len(remaining_fails)}")
+        if remaining_fails:
+            print("Permanent failures:", ", ".join(sorted(remaining_fails)))
+
+        if self.socketio:
             self.socketio.emit('update', {'usn': 'done'}, namespace='/')
-            print(f"Total global failed attempts: {global_fails}")
-            self.save_to_db()
-        except AttributeError:
-            pass
+        self._save_to_db()
 
-    def div_usns(self):
-        # divide into ranges
-        total_usns = int(self.end_usn)
-        num_threads = int(self.num_threads)
+    def _save_to_db(self):
+        """Save processed results to the database."""
+        print("\nSaving results to database...")
+        db = dbhandler.DBHandler()
+        files = [f for f in os.listdir(os.path.join(BASE_DIR, "pages"))
+                 if f.startswith(self.usn_prefix) and f.endswith(".html")]
 
-        base_range_size = int(total_usns // num_threads)
-        remainder = int(total_usns % num_threads)
+        for i, filename in enumerate(files, 1):
+            try:
+                print(f"Processing file {i}/{len(files)}: {filename}")
+                filepath = os.path.join(BASE_DIR, "pages", filename)
+                df = Extract(filepath)
+                dfdict = df.get_dfs()
 
-        current_start = 1
-        ranges = []
+                for sem, data in dfdict.items():
+                    if sem in ("Name", "USN") or data is None:
+                        continue
 
-        for i in range(num_threads):
-            range_size = base_range_size + (1 if i < remainder else 0)
-            current_end = current_start + range_size - 1
-            ranges.append((current_start, current_end))
-            current_start = current_end + 1
+                    details = df.calculate(data)
+                    table_name = f"X{self.usn_prefix}_SEM_{sem}"
+                    self._create_table(db, table_name, data)
+                    self._insert_data(db, table_name, details, dfdict)
 
-        return ranges
+            except Exception as e:
+                logging.error(f"Error processing {filename}: {e}")
 
-    def save_to_db(self):
-        files = os.listdir(base + "pages")
-        files = [f for f in files if f.endswith(".html") and f.startswith(self.usn_prefix)]
-        dbcursor = dbhandler.DBHandler()
-        # extract tables
-        for file in files:
-            df = Extract(base + f"pages/{file}")
-            print(df)
-            dfdict = df.get_dfs()
+        print("Database update completed!")
 
-            for sem in dfdict.keys():
-                if sem == "Name" or sem == "USN" or dfdict[sem] is None:
-                    continue
-                details = df.calculate(dfdict[sem])
-                # now get table name from usn_prefix and sem
-                table_name = f"X{self.usn_prefix}_SEM_{sem}"
-                try:
-                    columns = []
-                    for col in dfdict[sem]["Subject Code"]:
-                        columns.append(col + "_internal")
-                        columns.append(col + "_external")
-                    columns.append("Total")
-                    columns.append("CGPA")
-                    columns.append("Pass")
-                    columns.append("Absent")
-                    
-                    dbcursor.create_table_columns(table_name, columns)
-                    print("created table")
+    def _create_table(self, db, table_name, data):
+        """Create database table if it doesn't exist."""
+        columns = []
+        for code in data["Subject Code"]:
+            columns.extend([f"{code}_internal", f"{code}_external"])
+        columns.extend(["Total", "CGPA", "Pass", "Absent"])
 
+        try:
+            db.create_table_columns(table_name, columns)
+        except sqlite3.OperationalError as e:
+            if "already exists" not in str(e):
+                raise
 
-                except sqlite3.OperationalError as e:
-                    if "already exists" in str(e):
-                        print("already exists")
-                    elif "duplicate column name" in str(e):
-                        print("duplicate")
-                    else:
-                        logging.error(f"Error creating table: {e}")
-                finally:
-                    inte, exte = dataframe_to_sql(details[0])
-                    additional_data = [dfdict["Name"], dfdict["USN"]]+details[1]
-                    dbcursor.push_data_into_table(table_name, inte, exte, additional_data)
-                    print(f"Pushed data for {table_name}")
-                    print(inte, exte, additional_data)
-
-        # check if table is already created
-        # if not create table
-        # if table and data exists => get the table, check for changed values, then update
-        # push data into table
-
+    def _insert_data(self, db, table_name, details, dfdict):
+        """Insert data into the database."""
+        inte, exte = dataframe_to_sql(details[0])
+        additional_data = [dfdict["Name"], dfdict["USN"]] + details[1]
+        db.push_data_into_table(table_name, inte, exte, additional_data)
 
 
 if __name__ == "__main__":
-    thread_manager = ThreadManager("https://results.vtu.ac.in/DJcbcs24/index.php", "1BI22CD",
-                                   "1BI22CD", 240, num_threads=8)
-    # thread_manager.run_threads()
-    print(f"Total global failed attempts: {global_fails}")
-    thread_manager.save_to_db()
+    scraper = ThreadManager(
+        base_url="https://results.vtu.ac.in/DJcbcs24/index.php",
+        usn_prefix="1BI23CS",
+        db_table="1BI23CS",
+        end_usn=280,
+        num_threads=25
+    )
+    scraper.run_threads()

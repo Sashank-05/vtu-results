@@ -12,7 +12,7 @@ class Captcha:
         if os.getcwd().endswith("helpers"):
             self.background = cv.imread('captcha/background_image_median.png')
         else:
-            self.background = cv.imread('helpers/captcha/background_image_median.png')
+            self.background = cv.imread('new_helpers/captcha/background_image_median.png')
         self.ivtbackground = cv.bitwise_not(self.background)
 
     def solve_color(self):
