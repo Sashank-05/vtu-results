@@ -44,21 +44,29 @@ logging.basicConfig(
 
 
 class ThreadSafeSet:
-    """Thread-safe set to store failed USNs."""
+    """Thread-safe set to store failed USNs using a semaphore for mutual exclusion."""
 
     def __init__(self):
-        self._set = set()
-        self._lock = threading.Lock()
+        self._set = set()  # Internal set to store items
+        self._semaphore = threading.Semaphore(1)  # Semaphore initialized to 1 (acts as a mutex)
 
     def add(self, item):
-        with self._lock:
-            self._set.add(item)
+        """Add an item to the set in a thread-safe manner."""
+        self._semaphore.acquire()  # Lock the semaphore (enter critical section)
+        try:
+            self._set.add(item)  # Add the item to the set
+        finally:
+            self._semaphore.release()  # Unlock the semaphore (exit critical section)
 
     def pop_all(self):
-        with self._lock:
-            items = list(self._set)
-            self._set.clear()
-            return items
+        """Remove and return all items from the set in a thread-safe manner."""
+        self._semaphore.acquire()  # Lock the semaphore (enter critical section)
+        try:
+            items = list(self._set)  # Copy all items to a list
+            self._set.clear()  # Clear the set
+            return items  # Return the list of items
+        finally:
+            self._semaphore.release()  # Unlock the semaphore (exit critical section)
 
 
 # Global variable to track failed USNs
@@ -324,6 +332,6 @@ if __name__ == "__main__":
         usn_prefix="1BI23CS",
         db_table="1BI23CS",
         end_usn=280,
-        num_threads=25
+        num_threads=20
     )
     scraper.run_threads()
