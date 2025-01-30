@@ -150,7 +150,7 @@ function createCGPAChart(cgpaData) {
 }
 
 function createSubjectChart(subjectData) {
-    let ctx = document.getElementById('subjectChart').getContext('2d');
+    let ctx = document.getlementById('subjectChart').getContext('2d');
     console.log("Subject Data:", subjectData);
     console.log("Canvas Context:", ctx);
     destroyCharts();
