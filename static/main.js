@@ -149,6 +149,25 @@ function createCGPAChart(cgpaData) {
     });
 }
 
+function handleCommonInput() {
+    const input = document.getElementById("usnInput").value.trim();
+
+    // Check if the input is a USN (e.g., 1BI23CD055)
+    if (/^\d[A-Za-z]{2}\d{2}[A-Za-z]{2}\d{3}$/.test(input)) {
+        getStudentMarks(input);
+    }
+    // Check if the input is a semester number (e.g.,1BI23CD etc.)
+    else if (/^\d[A-Za-z]{2}\d{1,2}[A-Za-z]{2}$/.test(input)) {
+        getSemMarks(input);
+    }
+    // Handle invalid input
+    else {
+        console.error("Invalid input. Please enter a valid USN or semester number.");
+        const resultsDiv = document.getElementById("results");
+        resultsDiv.innerHTML = `<p class="error">Invalid input. Please enter a valid USN or semester number.</p>`;
+    }
+}
+
 function createSubjectChart(subjectData) {
     let ctx = document.getlementById('subjectChart').getContext('2d');
     console.log("Subject Data:", subjectData);
