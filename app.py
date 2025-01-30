@@ -66,7 +66,7 @@ def get_student(usn):
 def get_sem_marks(id, sem):
     try:
         sem_marks = db.get_semester_marks(id, sem)
-        columns = db.get_columns(f"BI23CD_SEM_{sem}")
+        columns = db.get_columns(f"X{id}_SEM_{sem}")
         return jsonify(sem_marks, columns)
     except Exception as e:
         if "no such table" in str(e):

@@ -65,7 +65,8 @@ class DBHandler:
     @reset_cursor
     def get_student_marks(self, branch_code, sem, usn):
         try:
-            sql = f"SELECT * FROM {branch_code}_SEM_{sem} WHERE USN LIKE ?"
+            sql = f"SELECT * FROM X{branch_code}_SEM_{sem} WHERE USN LIKE ?"
+            print(sql)
             self.cursor.execute(sql, (usn,))
             result = self.cursor.fetchall()
             return result

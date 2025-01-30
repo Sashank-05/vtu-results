@@ -254,7 +254,7 @@ function getSemMarks() {
 
     let apiUrl;
     try {
-        apiUrl = `/api/v1/${branchCode}/${sem}`;
+        apiUrl = `/api/v1/X${branchCode}/${sem}`;
     } catch (error) {
         console.log("Error:", error);
         document.getElementById("seminput").style.visibility = "visible";

@@ -24,7 +24,7 @@
             <div class="input-field">
                 <i class="material-icons">school</i>
                 <input type="text" id="usnInput" placeholder=" " pattern="1[A-Z]{2}\d{2}[A-Z]{2}\d{3}">
-                <label for="usnInput">University Seat Number</label>
+                <label for="usnInput">Enter USN or USN prefix</label>
                 <div class="underline"></div>
             </div>
 
@@ -44,13 +44,9 @@
 
 
             <div class="action-buttons">
-                <button class="glass-button" onclick="getStudentMarks()">
-                    <span>Generate Scorecard</span>
+                <button class="glass-button" onclick="handleCommonInput()">
+                    <span>Analyze</span>
                     <i class="material-icons">arrow_forward</i>
-                </button>
-                <button class="glass-button" onclick="getSemMarks()">
-                    <span>Batch Analysis</span>
-                    <i class="material-icons">insights</i>
                 </button>
             </div>
         </div>

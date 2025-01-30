@@ -13,12 +13,12 @@ logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(
 
 def neat_marks(sem: int, usn: str, batch=23):  # fixed this function
     table = dbhandler.DBHandler()
-    table_name = usn[1:5]
     branch = usn[5:7]
 
     try:
-        marks = table.get_student_marks(f"{table_name}{branch}", sem, usn)
-        column = table.get_columns(f"BI{batch}CD_SEM_{sem}")
+        marks = table.get_student_marks(f"{usn[:-3]}", sem, usn)
+        column = table.get_columns(f"X{usn[:-3]}_SEM_{sem}")
+        print(f"X{usn[:-3]}", marks)
     except Exception as e:
         logging.error(f"Error fetching marks or columns: {e}")
         return 0
