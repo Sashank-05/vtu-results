@@ -194,7 +194,9 @@ class ThreadManager:
 
     def _calculate_ranges(self, end_usn, num_threads):
         """Divide USNs into ranges for threading."""
-        base_range = end_usn // num_threads
+        num_threads=int(num_threads)
+        end_usn=int(end_usn)
+        base_range = int(end_usn) // int(num_threads)
         remainder = end_usn % num_threads
         ranges = []
         current = 1
