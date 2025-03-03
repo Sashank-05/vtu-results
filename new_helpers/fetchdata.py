@@ -17,14 +17,14 @@ from selenium.webdriver.support.ui import WebDriverWait
 if os.getcwd().endswith("helpers"):
     from captcha import Captcha
     from extract import Extract
-    from formats import dataframe_to_sql
+    from formats import dataframe_to_sql,get_subject_code
     import dbhandler
 
     BASE_DIR = "../tempwork/"
 else:
     from new_helpers.captcha import Captcha
     from new_helpers.extract import Extract
-    from new_helpers.formats import dataframe_to_sql
+    from new_helpers.formats import dataframe_to_sql,get_subject_code
     from new_helpers import dbhandler
 
     BASE_DIR = "tempwork/"
@@ -291,47 +291,49 @@ class ThreadManager:
                 filepath = os.path.join(BASE_DIR, "pages", filename)
                 df = Extract(filepath)
                 dfdict = df.get_dfs()
-
+                #print(dfdict)
+                oth=[]
                 for sem, data in dfdict.items():
-                    if sem in ("Name", "USN") or data is None:
+                    
+                    if sem in ("Name", "USN") :
+                        oth.append(data)
                         continue
 
+                    if data is None:
+                        continue
+                        
+                    
                     details = df.calculate(data)
+                    print(details)
                     table_name = f"X{self.usn_prefix}_SEM_{sem}"
-                    self._create_table(db, table_name, data)
-                    self._insert_data(db, table_name, details, dfdict)
+                    
+                    try :
+                        db.create_table_columns(table_name,get_subject_code(details[0]))
+                    except Exception as e:
+                        pass
+
+                    inte,exte=dataframe_to_sql(details[0])
+                    print(oth)
+                    db.push_data_into_table(table_name , inte , exte , oth+details[1])
 
             except Exception as e:
                 logging.error(f"Error processing {filename}: {e}")
 
         print("Database update completed!")
 
-    def _create_table(self, db, table_name, data):
-        """Create database table if it doesn't exist."""
-        columns = []
-        for code in data["Subject Code"]:
-            columns.extend([f"{code}_internal", f"{code}_external"])
-        columns.extend(["Total", "CGPA", "Pass", "Absent"])
+        
 
-        try:
-            db.create_table_columns(table_name, columns)
-        except sqlite3.OperationalError as e:
-            if "already exists" not in str(e):
-                raise
-
-    def _insert_data(self, db, table_name, details, dfdict):
-        """Insert data into the database."""
-        inte, exte = dataframe_to_sql(details[0])
-        additional_data = [dfdict["Name"], dfdict["USN"]] + details[1]
-        db.push_data_into_table(table_name, inte, exte, additional_data)
+    
 
 
 if __name__ == "__main__":
     scraper = ThreadManager(
         base_url="https://results.vtu.ac.in/DJcbcs24/index.php",
-        usn_prefix="1BI23CS",
-        db_table="1BI23CS",
+        usn_prefix="1BI23EC",
+        db_table="1BI23EC",
         end_usn=280,
         num_threads=20
     )
-    scraper.run_threads()
+    #scraper.run_threads()
+
+    scraper._save_to_db()

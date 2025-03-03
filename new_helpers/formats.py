@@ -86,7 +86,7 @@ def get_subject_code(df):
     for i in list(df["Subject Code"]):
         subjects.append(i + "_internal")
         subjects.append(i + "_external")
-    subjects += ["Total", "GPA", "Result"]
+    subjects += ["Total", "GPA", "PASS","ABSENT"]
 
     return subjects
 

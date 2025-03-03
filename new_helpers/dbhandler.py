@@ -41,9 +41,6 @@ class DBHandler:
             sql = f"ALTER TABLE {table_name} ADD COLUMN {sub} VARCHAR(100);"
             self.cursor.execute(sql)
             
-          
-        sql1 = f"ALTER TABLE {table_name} ADD COLUMN Absent VARCHAR(100);"
-        self.cursor.execute(sql1)
 
         self.connection.commit()
 
