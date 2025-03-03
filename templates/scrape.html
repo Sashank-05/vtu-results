@@ -7,179 +7,22 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
-    <style>
-        :root {
-            --primary-color: #007bff;
-            --success-color: #28a745;
-            --background: #1a1a2e;
-            --glass-bg: rgba(255, 255, 255, 0.05);
-        }
-
-        body {
-            font-family: 'Inter', sans-serif;
-            background-color: var(--background);
-            color: #fff;
-            margin: 0;
-            min-height: 100vh;
-            position: relative;
-        }
-
-        .glow {
-            position: fixed;
-            top: -50%;
-            left: -50%;
-            width: 200%;
-            height: 200%;
-            background: radial-gradient(circle, rgba(0,123,255,0.1) 0%, transparent 60%);
-            pointer-events: none;
-            z-index: -1;
-        }
-
-        .container {
-            max-width: 800px;
-            margin: 0 auto;
-            padding: 2rem;
-        }
-
-        header {
-            text-align: center;
-            margin-bottom: 2rem;
-        }
-
-        .subtext {
-            color: #aaa;
-            margin-top: 0.5rem;
-        }
-
-        .input-card {
-            background: var(--glass-bg);
-            backdrop-filter: blur(10px);
-            border-radius: 10px;
-            padding: 2rem;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-        }
-
-        .input-field {
-            position: relative;
-            margin-bottom: 1.5rem;
-        }
-
-        .input-field input {
-            width: 100%;
-            padding: 1rem;
-            background: transparent;
-            border: none;
-            border-bottom: 2px solid #333;
-            color: #fff;
-            font-size: 1rem;
-            transition: border-color 0.3s ease;
-        }
-
-        .input-field input:focus {
-            outline: none;
-            border-color: var(--primary-color);
-        }
-
-        .input-field label {
-            position: absolute;
-            left: 2rem;
-            top: 1rem;
-            pointer-events: none;
-            transition: all 0.3s ease;
-            color: #666;
-        }
-
-        .input-field input:placeholder-shown + label {
-            top: 1rem;
-            left: 2rem;
-        }
-
-        .input-field input:focus + label,
-        .input-field input:not(:placeholder-shown) + label {
-            top: -0.5rem;
-            left: 0;
-            font-size: 0.8rem;
-            color: var(--primary-color);
-        }
-
-        .material-icons {
-            position: absolute;
-            left: 0;
-            top: 1rem;
-            color: #666;
-        }
-
-        .glass-button {
-            background: var(--glass-bg);
-            border: none;
-            padding: 0.8rem 1.5rem;
-            border-radius: 5px;
-            color: #fff;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-
-        .glass-button:hover {
-            background: rgba(0, 123, 255, 0.2);
-        }
-
-        .live-progress {
-            margin-top: 2rem;
-            display: none;
-        }
-
-        .table-container {
-            overflow-x: auto;
-            background: var(--glass-bg);
-            backdrop-filter: blur(10px);
-            border-radius: 10px;
-            padding: 1rem;
-            margin-top: 1rem;
-        }
-
-        table {
-            border-collapse: collapse;
-            width: 100%;
-            background: rgba(255, 255, 255, 0.05);
-        }
-
-        th, td {
-            padding: 12px 15px;
-            text-align: center;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            min-width: 100px;
-        }
-
-        th {
-            background-color: rgba(0, 123, 255, 0.8);
-            font-weight: 500;
-        }
-
-        td {
-            background-color: var(--glass-bg);
-            position: relative;
-        }
-
-        td.fetched {
-            background-color: rgba(40, 167, 69, 0.8) !important;
-            animation: pop 0.3s ease;
-        }
-
-        @keyframes pop {
-            0% { transform: scale(0.9); }
-            50% { transform: scale(1.05); }
-            100% { transform: scale(1); }
-        }
-
-        .error {
-            color: #dc3545;
-            margin-top: 1rem;
-        }
-    </style>
+    <link href="static/main.css" rel="stylesheet">
 </head>
+<style>
+    .hoverable {
+        width: 40px;
+        height: 40px;
+        text-align: center;
+        border: 1px solid #ccc;
+        color: #BE3144;
+        background: #09122C;
+    }
+
+    .fetched {
+        background-color: #4CAF50; /* Green when fetched */
+    }
+</style>
 <body>
 <div class="glow"></div>
 <div class="container">
@@ -187,40 +30,39 @@
         <h1>Scrape Student Data</h1>
         <p class="subtext">Fetch results quickly and efficiently</p>
     </header>
-    
+
     <div class="analysis-container">
         <div class="input-card">
-            <!-- Input fields remain the same -->
             <div class="input-field">
                 <i class="material-icons">person</i>
                 <input type="text" id="usnPrefix" placeholder=" " required>
                 <label for="usnPrefix">Enter USN Prefix (e.g., 1BI23CD)</label>
             </div>
-            
+
             <div class="input-field">
                 <i class="material-icons">link</i>
                 <input type="text" id="customUrl" placeholder=" ">
                 <label for="customUrl">Enter the custom URL for scraping</label>
             </div>
-            
+
             <div class="input-field">
                 <i class="material-icons">filter_1</i>
                 <input type="text" id="sem" placeholder=" " required>
                 <label for="sem">Enter Semester (e.g., 1)</label>
             </div>
-            
+
             <div class="input-field">
                 <i class="material-icons">confirmation_number</i>
                 <input type="text" id="endUsn" placeholder=" " required>
                 <label for="endUsn">Enter Last USN Number (e.g., 56)</label>
             </div>
-            
+
             <div class="input-field">
                 <i class="material-icons">settings</i>
                 <input type="text" id="numThreads" placeholder=" " value="4">
                 <label for="numThreads">Number of Threads (Default: 4)</label>
             </div>
-            
+
             <div class="action-buttons">
                 <button class="glass-button" onclick="startScraping()">
                     <span>Start Scraping</span>
@@ -235,7 +77,7 @@
     <div class="live-progress">
         <h2>Live Scraping Progress</h2>
         <div class="table-container">
-            <table id="usn-table">
+            <table id="usn-table" class="responsive-table">
                 <thead id="table-header"></thead>
                 <tbody id="table-body"></tbody>
             </table>
@@ -263,50 +105,45 @@
 
         fetch("/api/v1/scrape", {
             method: "POST",
-            headers: { "Content-Type": "application/json" },
+            headers: {"Content-Type": "application/json"},
             body: JSON.stringify(payload)
         })
-        .then(response => response.json())
-        .then(data => {
-            const resultsDiv = document.getElementById("results");
-            if (data.success) {
-                resultsDiv.innerHTML = "";
-                document.querySelector('.live-progress').style.display = 'block';
-                generateTable(endUsn);
-            } else {
-                resultsDiv.innerHTML = `<p class="error">Error: ${data.error}</p>`;
-            }
-        })
-        .catch(error => {
-            document.getElementById("results").innerHTML = 
-                `<p class="error">Error: ${error.message}</p>`;
-        });
+                .then(response => response.json())
+                .then(data => {
+                    const resultsDiv = document.getElementById("results");
+                    if (data.success) {
+                        resultsDiv.innerHTML = "";
+                        document.querySelector('.live-progress').style.display = 'block';
+                        generateTable(endUsn);
+                    } else {
+                        resultsDiv.innerHTML = `<p class="error">Error: ${data.error}</p>`;
+                    }
+                })
+                .catch(error => {
+                    document.getElementById("results").innerHTML =
+                            `<p class="error">Error: ${error.message}</p>`;
+                });
     }
 
     function generateTable(endUsn) {
-        const header = document.getElementById("table-header");
         const body = document.getElementById("table-body");
-        header.innerHTML = "";
         body.innerHTML = "";
 
-        // Create header row
-        const headerRow = document.createElement("tr");
-        for (let i = 1; i <= endUsn; i++) {
-            const th = document.createElement("th");
-            th.textContent = i.toString().padStart(2, '0');
-            headerRow.appendChild(th);
-        }
-        header.appendChild(headerRow);
+        const usnsPerRow = 8; // Adjust to 8-10 as needed
+        let row;
 
-        // Create data row
-        const dataRow = document.createElement("tr");
         for (let i = 1; i <= endUsn; i++) {
+            if ((i - 1) % usnsPerRow === 0) {
+                row = document.createElement("tr");
+                body.appendChild(row);
+            }
+
             const td = document.createElement("td");
             td.id = `usn-${i}`;
-            td.textContent = "-";
-            dataRow.appendChild(td);
+            td.textContent = `${i}`;
+            td.classList.add('hoverable', 'pending'); // Initial class
+            row.appendChild(td);
         }
-        body.appendChild(dataRow);
     }
 
     function extractNumberFromUSN(usn) {
@@ -314,14 +151,14 @@
         return matches ? parseInt(matches[0]) : null;
     }
 
-    socket.on('update', function(data) {
+    socket.on('update', function (data) {
         if (data.usn) {
             const numericUSN = extractNumberFromUSN(data.usn);
             if (numericUSN) {
                 const cell = document.getElementById(`usn-${numericUSN}`);
                 if (cell) {
-                    cell.textContent = data.usn;
-                    cell.classList.add('fetched');
+                    cell.classList.remove('pending');
+                    cell.classList.add('fetched'); // Turns green
                 }
             }
         }
