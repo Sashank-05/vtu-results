@@ -51,8 +51,8 @@ def get_student(usn):
                 x, y = formats.neat_marks(i, usn)
                 table.append(x)
                 data.append(y)
-            except:
-                pass
+            except Exception as e:
+                print(e)
 
     except Exception as e:
         # log with traceback

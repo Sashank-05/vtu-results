@@ -168,27 +168,6 @@ function handleCommonInput() {
     }
 }
 
-function createSubjectChart(subjectData) {
-    let ctx = document.getElementById('subjectChart').getContext('2d');
-    console.log("Subject Data:", subjectData);
-    console.log("Canvas Context:", ctx);
-    destroyCharts();
-    performanceChart = new Chart(ctx, {
-        type: 'bar',
-        data: {
-            labels: subjectData.map(item => item.subject),
-            datasets: [{
-                label: 'Marks Distribution',
-                data: subjectData.map(item => item.average),
-                backgroundColor: 'rgba(41, 151, 255, 0.5)',
-                borderColor: '#2997ff',
-                borderWidth: 1
-            }]
-        },
-        options: chartConfig
-    });
-}
-
 // Modified getStudentMarks function
 function getStudentMarks() {
     const usn = document.getElementById("usnInput").value;
@@ -217,6 +196,7 @@ function getStudentMarks() {
             // Process subject data for table
             const tableContainer = resultsDiv.querySelector('.table-container');
             if (Array.isArray(data[0])) {
+                console.log(data[0]);
                 data[0].forEach((semesterData, index) => {
                     const semDiv = document.createElement('div');
                     semDiv.innerHTML = `
@@ -267,6 +247,7 @@ function getSemMarks() {
         .then((data) => {
             const resultsDiv = document.getElementById("results");
             resultsDiv.innerHTML = `
+
                 <div class="chart-container">
                     <canvas id="subjectChart"></canvas>
                 </div>
@@ -276,36 +257,103 @@ function getSemMarks() {
                 </div>
             `;
             console.log(data);
+            let x = 0;
+            for(let i = 0; i < data[1].length; i++){
+                if (data[1][i] === "Total"){
+                    x = i;
+                    break;
+                }
+            }
             // Create table
             const table = createTableFromData(data[1], data[0]);
+
             resultsDiv.querySelector('.table-container').appendChild(table);
 
             // Process data for subject chart
-            const subjectData = processSubjectData(data);
+            const subjectData = processSubjectData(data,x);
             createSubjectChart(subjectData);
         })
         .catch(handleError);
 }
 
-function processSubjectData(data) {
-    // Implement your data processing logic here
-    // Example: return array of { subject: 'Math', average: 85 }
-    const columns = data[1].slice(2, -3);
-    const subjectAverages = [];
+function processSubjectData(data, x) {
+    // Extract total marks from each student (third last column)
 
-    for (let i = 0; i < columns.length; i += 2) {
-        const subject = columns[i].split('_')[0];
-        const totalMarks = data[0].reduce((sum, row) => {
-            return sum + (parseFloat(row[i + 2]) + parseFloat(row[i + 3]));
-        }, 0);
+    let totalMarks = data[0].map(row => parseFloat(row[x]));
+    totalMarks = totalMarks.filter(num => !isNaN(num));
 
-        subjectAverages.push({
-            subject: subject,
-            average: totalMarks / data[0].length
-        });
-    }
+    console.log(totalMarks);
 
-    return subjectAverages;
+    // Create bins for histogram
+    const minMark = Math.min(...totalMarks);
+    const maxMark = Math.max(...totalMarks);
+    const binSize = 25;
+    const bins = Array.from({length: Math.ceil((maxMark - minMark)/binSize)}, (_, i) =>
+        Math.floor(minMark/binSize)*binSize + i*binSize
+    );
+
+    // Create labels and counts
+    const labels = bins.map((bin, index) =>
+        `${bin}-${bins[index+1] ? bins[index+1] : bin+binSize}`
+    ).slice(0, -1);
+
+    const counts = Array(labels.length).fill(0);
+    totalMarks.forEach(mark => {
+        const binIndex = Math.floor((mark - bins[0])/binSize);
+        if (binIndex < counts.length) counts[binIndex]++;
+    });
+
+    return { labels, counts };
+}
+
+function createSubjectChart(chartData) {
+    const ctx = document.getElementById('subjectChart').getContext('2d');
+    //destroyCharts();
+
+    performanceChart = new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: chartData.labels,
+            datasets: [{
+                label: 'Number of Students',
+                data: chartData.counts,
+                backgroundColor: 'rgba(41, 151, 255, 0.5)',
+                borderColor: '#2997ff',
+                borderWidth: 1
+            }]
+        },
+        options: {
+            ...chartConfig,
+            scales: {
+                x: {
+                    title: {
+                        display: true,
+                        text: 'Total Marks Range',
+                        color: '#fff'
+                    },
+                    ...chartConfig.scales.x
+                },
+                y: {
+                    title: {
+                        display: true,
+                        text: 'Number of Students',
+                        color: '#fff'
+                    },
+                    beginAtZero: true,
+                    ...chartConfig.scales.y
+                }
+            },
+            plugins: {
+                ...chartConfig.plugins,
+                tooltip: {
+                    callbacks: {
+                        title: (context) => `Marks Range: ${context[0].label}`,
+                        label: (context) => `Students: ${context.raw}`
+                    }
+                }
+            }
+        }
+    });
 }
 
 function handleError(error) {

@@ -46,9 +46,14 @@
             <div class="action-buttons">
                 <button class="glass-button" onclick="handleCommonInput()">
                     <span>Analyze</span>
+                    <i class="material-icons">bar_chart</i>
+                </button>
+                <button class="glass-button" onclick="window.location=`/scrape`">
+                    <span>Fetch Results</span>
                     <i class="material-icons">arrow_forward</i>
                 </button>
             </div>
+
         </div>
 
         <!-- Graph Container -->
@@ -60,13 +65,11 @@
                 <div class="metric-card">
                     <i class="material-icons">speed</i>
                     <h4>CGPA Trend</h4>
-                    <canvas id="trendChart"></canvas>
                 </div>
                 <div class="metric-card">
                     <i class="material-icons">bar_chart</i>
                     <h4>Subject-wise</h4>
                     <div class="chart-container">
-                        <canvas width="400" height="400" id="subjectChart"></canvas>
                     </div>
                 </div>
             </div>

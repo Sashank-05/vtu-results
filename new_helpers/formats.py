@@ -1,6 +1,6 @@
 import logging
 import os
-
+import json
 import pandas as pd
 
 if os.getcwd().endswith('new_helpers'):
@@ -10,6 +10,8 @@ else:
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(module)s - %(message)s')
 
+with open(os.path.join(os.path.dirname(__file__), '../static/data.json'), 'r') as file:
+    subject_data = json.load(file)
 
 def neat_marks(sem: int, usn: str, batch=23):  # fixed this function
     table = dbhandler.DBHandler()
@@ -18,6 +20,8 @@ def neat_marks(sem: int, usn: str, batch=23):  # fixed this function
     try:
         marks = table.get_student_marks(f"{usn[:-3]}", sem, usn)
         column = table.get_columns(f"X{usn[:-3]}_SEM_{sem}")
+        if marks[0][-1] != "PASS" or marks[0][-1] != "FAIL":
+            marks[0] = marks[0][:-2]
         print(f"X{usn[:-3]}", marks)
     except Exception as e:
         logging.error(f"Error fetching marks or columns: {e}")
@@ -38,15 +42,27 @@ def neat_marks(sem: int, usn: str, batch=23):  # fixed this function
         else:
             external_marks.append(marks[0][i])
 
-    for internal, external in zip(internal_marks, external_marks):
+    print(new_column)
+    for i, (internal, external) in enumerate(zip(internal_marks, external_marks)):
         total = int(internal) + int(external)
         total_marks.append(total)
-        result.append("P" if int(internal) >= 20 and int(external) >= 18 and total >= 40 else "F")
+        if subject_data.get(new_column[i], {}).get("Credits", 0) == 0 or new_column[i] == "BSCK307":
+            result.append("P")
+        else:
+            result.append("P" if int(internal) >= 20 and int(external) >= 18 and total >= 40 else "F")
 
     column_names = ["Subject Code", "Internal Marks", "External Marks", "Total", "Result"]
+
     df = pd.DataFrame(list(zip(new_column, internal_marks, external_marks, total_marks, result)), columns=column_names)
+    print(df)
+    try:
+        df = df.drop(['Pass', 'ABSENT', 'Absent'], axis=1)
+    except Exception as e:
+        print("e from format", e)
     extractor = extract.Extract()
+
     df_ = extractor.calculate(df)
+    print("I'm here")
     print(df_)
     df = df_[0]
     extras = df_[1]

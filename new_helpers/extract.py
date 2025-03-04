@@ -125,6 +125,7 @@ class Extract:
         codes = list(df["Subject Code"])
         total_marks = list(df["Total"])
         result = list(df["Result"])
+        print(result)
 
         for i in range(len(internal_marks)):
             internal_marks[i] = int(internal_marks[i])
@@ -161,19 +162,24 @@ class Extract:
             if grade[i] == -1:
                 obtained.append("A")
             elif grade[i] == 0:
-                obtained.append("F")
+                    obtained.append(0)
+
             else:
                 obtained.append(grade[i] * credit[i])
             total_credits += subject_data.get(codes[i].strip(), {}).get("Credits", 0)
 
+
+        print(len(grade), len(credit),len(obtained))
         df["Grade Points"] = grade
         df["Credits"] = credit
         df["Credits Obtained"] = obtained
 
+        print("I'm here inside extract")
         if result.count("A") > 0 or result.count("F") > 0:
             gpa = "NAN"
         else:
             gpa = sum(obtained) / total_credits
+
         mainlist = [df, [sum(total_marks), gpa, result.count("P"),result.count("A")]]
         return mainlist
 
