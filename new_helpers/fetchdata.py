@@ -87,7 +87,7 @@ class FillForm:
     def _create_driver(self):
         """Create and configure the Selenium WebDriver."""
         chrome_options = webdriver.ChromeOptions()
-        #chrome_options.add_argument("--headless")
+        chrome_options.add_argument("--headless")
         chrome_options.add_argument("--no-sandbox")
         chrome_options.add_argument("--disable-dev-shm-usage")
         chrome_options.add_argument("--window-size=1920x1080")
@@ -123,7 +123,7 @@ class FillForm:
 
     def _process_usn(self, usn):
         """Process a single USN."""
-        max_attempts = 10 if self.is_retry else 5
+        max_attempts = 30 if self.is_retry else 5
         for attempt in range(1, max_attempts + 1):
             try:
                 self.driver.get(self.base_url)
@@ -330,11 +330,11 @@ class ThreadManager:
 
 if __name__ == "__main__":
     scraper = ThreadManager(
-        base_url="https://results.vtu.ac.in/DJcbcs24/index.php",
-        usn_prefix="1BI23EC",
-        db_table="1BI23EC",
-        end_usn=280,
-        num_threads=20
+        base_url="https://results.vtu.ac.in/JJEcbcs25/index.php",
+        usn_prefix="1BI23CD",
+        db_table="1BI23CD",
+        end_usn=405,
+        num_threads=10
     )
     #scraper.run_threads()
 
