@@ -213,7 +213,12 @@ class ThreadManager:
     def _generate_usns(self, range_tuple):
         """Generate USNs from a range tuple."""
         start, end = range_tuple
-        return [f"{self.usn_prefix}{num:03d}" for num in range(start, end + 1)]
+        # Handle diploma students (1BI24CD) with USNs starting from 400
+        if self.usn_prefix == "1BI24CD":
+            return [f"{self.usn_prefix}{num:03d}" for num in range(start, end + 1)]
+        else:
+            # Handle degree students (1BI23CD) with normal USN range
+            return [f"{self.usn_prefix}{num:03d}" for num in range(start, end + 1)]
 
     def _chunk_list(self, lst, n):
         """Split list into n roughly equal chunks."""
@@ -323,19 +328,77 @@ class ThreadManager:
 
         print("Database update completed!")
 
-        
+    def save_sem_results(self, sem=5):
+        """Save processed results for a specific semester to the database."""
+        print(f"\nSaving semester {sem} results to database...")
+        db = dbhandler.DBHandler()
+        files = [f for f in os.listdir(os.path.join(BASE_DIR, "pages"))
+                 if f.startswith(self.usn_prefix) and f.endswith(".html")]
 
-    
+        for i, filename in enumerate(files, 1):
+            try:
+                print(f"Processing file {i}/{len(files)}: {filename}")
+                filepath = os.path.join(BASE_DIR, "pages", filename)
+                df = Extract(filepath)
+                dfdict = df.get_dfs()
+
+                # Get name and USN
+                oth = []
+                for key in ("Name", "USN"):
+                    if key in dfdict:
+                        oth.append(dfdict[key])
+
+                # Process only the specified semester
+                if sem in dfdict and dfdict[sem] is not None:
+                    data = dfdict[sem]
+                    details = df.calculate(data)
+                    print(f"Semester {sem} details:", details[1])  # [total, gpa, passes, absents]
+
+                    table_name = f"X{self.usn_prefix}_SEM_{sem}"
+
+                    try:
+                        db.create_table_columns(table_name, get_subject_code(details[0]))
+                    except Exception as e:
+                        pass
+
+                    inte, exte = dataframe_to_sql(details[0])
+                    db.push_data_into_table(table_name, inte, exte, oth + details[1])
+                else:
+                    print(f"  No semester {sem} data found for {filename}")
+
+            except Exception as e:
+                logging.error(f"Error processing {filename}: {e}")
+
+        print(f"Semester {sem} database update completed!")
 
 
 if __name__ == "__main__":
-    scraper = ThreadManager(
-        base_url="https://results.vtu.ac.in/JJEcbcs25/index.php",
+    # Process degree students (1BI23CD001 to 1BI23CD057)
+    print("Processing Degree Students (1BI23CD)...")
+    degree_scraper = ThreadManager(
+        base_url="https://results.vtu.ac.in/D25J26Ecbcs/index.php",
         usn_prefix="1BI23CD",
         db_table="1BI23CD",
-        end_usn=405,
+        end_usn=57,
         num_threads=10
     )
-    #scraper.run_threads()
+    #degree_scraper.run_threads()
+    degree_scraper.save_sem_results(5)
 
-    scraper._save_to_db()
+    print("\n" + "="*60 + "\n")
+
+    # Process diploma students (1BI24CD400 to 1BI24CD430)
+    print("Processing Diploma Students (1BI24CD)...")
+    diploma_scraper = ThreadManager(
+        base_url="https://results.vtu.ac.in/D25J26Ecbcs/index.php",
+        usn_prefix="1BI24CD",
+        db_table="1BI23CD",  # Same database table as degree students
+        end_usn=30,  # This will create 001-030, but we'll override the USN generation
+        num_threads=10
+    )
+
+    # Override the ranges to generate USNs from 400-430
+    diploma_scraper.ranges = [(400, 430)]
+
+    diploma_scraper.run_threads()
+    diploma_scraper.save_sem_results(5)

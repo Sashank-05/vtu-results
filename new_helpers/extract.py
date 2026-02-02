@@ -3,6 +3,7 @@ import logging
 import os
 from io import StringIO
 import pprint
+import difflib
 
 import pandas
 import pandas as pd
@@ -155,19 +156,32 @@ class Extract:
         total_credits = 0
         credit = []
         obtained = []
+        missing_codes = []
         for i in range(len(result)):
-            credit.append(subject_data.get(codes[i].strip(), {}).get("Credits", 0))
-            # print(credits[i])
-            # print(grade[i])
+            code_key = codes[i].strip()
+            # get credits, default to 0 when not present
+            cred = subject_data.get(code_key, {}).get("Credits", 0)
+            if code_key not in subject_data:
+                # try fuzzy match (handles small typos like BRMK557 vs BMRK557)
+                match = difflib.get_close_matches(code_key, subject_data.keys(), n=1, cutoff=0.8)
+                if match:
+                    found = match[0]
+                    logging.info("Fuzzy matched subject code %s -> %s", code_key, found)
+                    cred = subject_data.get(found, {}).get("Credits", 0)
+                else:
+                    missing_codes.append(code_key)
+            credit.append(cred)
             if grade[i] == -1:
                 obtained.append("A")
             elif grade[i] == 0:
-                    obtained.append(0)
+                obtained.append(0)
 
             else:
                 obtained.append(grade[i] * credit[i])
-            total_credits += subject_data.get(codes[i].strip(), {}).get("Credits", 0)
+            total_credits += cred
 
+        if missing_codes:
+            logging.warning("Missing subjects in data.json: %s", ", ".join(sorted(set(missing_codes))))
 
         print(len(grade), len(credit),len(obtained))
         df["Grade Points"] = grade
@@ -178,7 +192,13 @@ class Extract:
         if result.count("A") > 0 or result.count("F") > 0:
             gpa = "NAN"
         else:
-            gpa = sum(obtained) / total_credits
+            if total_credits <= 0:
+                logging.error("Total credits is zero or missing for subjects: %s. Can't compute GPA.", ", ".join(sorted(set([c.strip() for c in codes]))))
+                gpa = "NAN"
+            else:
+                # sum only numeric obtained values
+                numeric_sum = sum([v for v in obtained if isinstance(v, (int, float))])
+                gpa = numeric_sum / total_credits
 
         mainlist = [df, [sum(total_marks), gpa, result.count("P"),result.count("A")]]
         return mainlist
